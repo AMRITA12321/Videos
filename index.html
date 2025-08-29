@@ -1,490 +1,811 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ভিডিও প্ল্যাটফর্ম — Main</title>
-  <style>
-    :root{--bg:#fafafa;--card:#fff;--accent:#0b74de;--muted:#666}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:#111}
-    header{display:flex;align-items:center;justify-content:space-between;padding:12px;background:#111;color:#fff}
-    header .brand{font-weight:700}
-    nav a{color:#ddd;margin:0 8px;text-decoration:none}
-    .container{max-width:1100px;margin:18px auto;padding:0 12px}
-    .layout{display:grid;grid-template-columns:1fr 320px;gap:14px}
-    .card{background:var(--card);border-radius:10px;padding:10px;box-shadow:0 1px 6px rgba(0,0,0,0.06)}
-    .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
-    .video-thumb img{width:100%;height:160px;object-fit:cover;border-radius:8px}
-    .video-meta{padding:8px}
-    .btn{background:var(--accent);color:#fff;border:none;padding:8px 10px;border-radius:6px;cursor:pointer}
-    .btn.secondary{background:#eee;color:#111}
-    .small{font-size:13px;color:var(--muted)}
-    #player-modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:60}
-    #player-wrap{position:relative;max-width:90vw;width:100%;max-height:90vh}
-    video{width:100%;height:auto;background:#000;border-radius:8px}
-    #player-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;pointer-events:none}
-    .hidden{display:none}
-    .ad-slot{background:#111;color:#fff;padding:8px;border-radius:6px;text-align:center}
-    label{display:block;margin-top:8px;font-weight:600}
-    input[type="text"], textarea{width:100%;padding:8px;border-radius:6px;border:1px solid #ddd}
-    footer{margin-top:18px;padding:10px;text-align:center;color:var(--muted)}
-    @media(max-width:900px){ .layout{grid-template-columns:1fr} }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ভিডিও শেয়ার প্ল্যাটফর্ম — Single File</title>
+<style>
+  :root{
+    --bg:#0b1220; --card:#121a2b; --muted:#9bb0d3; --text:#eaf2ff; --pri:#4f8cff; --pri-2:#2a61d6; --danger:#ff4d5a; --ok:#2ecc71;
+    --shadow:0 8px 24px rgba(0,0,0,.3);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial;color:var(--text);background:linear-gradient(180deg,#0a0f1a 0,#081022 100%) fixed;}
+  a{color:var(--pri)}
+  header{position:sticky;top:0;z-index:50;background:rgba(10,15,26,.7);backdrop-filter:blur(10px);border-bottom:1px solid #1b2640}
+  .wrap{max-width:1100px;margin:0 auto;padding:12px 16px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .grow{flex:1}
+  .brand{font-weight:800;letter-spacing:.5px}
+  .btn{background:var(--pri);border:none;padding:10px 14px;border-radius:12px;color:#fff;cursor:pointer;box-shadow:var(--shadow)}
+  .btn.secondary{background:#1f2a44}
+  .btn.danger{background:var(--danger)}
+  .btn.ok{background:var(--ok)}
+  .pill{padding:6px 10px;border:1px solid #25345a;background:#0f1627;border-radius:999px;color:var(--muted);font-size:12px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .card{background:var(--card);border:1px solid #1a2642;border-radius:16px;box-shadow:var(--shadow);padding:14px}
+  .muted{color:var(--muted)}
+  .thumb{aspect-ratio:16/9;background:#0d1426;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid #243256}
+  .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .input, textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #223057;background:#0c1526;color:#eaf2ff}
+  .footer{margin-top:40px;border-top:1px solid #1b2747;padding:24px 0;color:var(--muted);font-size:14px}
+  .tag{font-size:11px;border:1px dashed #2b3c66;border-radius:8px;padding:3px 6px;color:#9bb0d3}
+  .hidden{display:none !important}
+
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(3,8,20,.7);display:none;align-items:center;justify-content:center;padding:18px;z-index:60}
+  .modal .box{width:100%;max-width:480px;background:var(--card);border:1px solid #243057;border-radius:16px;padding:16px;animation:pop .15s ease-out}
+  @keyframes pop{from{transform:scale(.96);opacity:.6}to{transform:scale(1);opacity:1}}
+
+  /* player overlay */
+  .player{position:relative;border-radius:12px;overflow:hidden;border:1px solid #25345d;background:#000}
+  .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(transparent,rgba(0,0,0,.45));opacity:1;transition:.2s;cursor:pointer}
+  .overlay.hidden{opacity:0;pointer-events:none}
+  .overlay .play{width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.12);display:grid;place-items:center;border:1px solid rgba(255,255,255,.2)}
+  .overlay svg{transform:translateX(3px)}
+  .ctrls{position:absolute;bottom:8px;left:8px;right:8px;display:flex;gap:8px;justify-content:space-between;opacity:0;transition:.2s}
+  .player:hover .ctrls{opacity:1}
+  .ad-mask{position:absolute;inset:0;background:rgba(0,0,0,.75);color:#fff;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px}
+  .ad-mask.show{display:flex}
+  .ad-badge{position:absolute;top:8px;left:8px;background:#ffc107;color:#000;border-radius:8px;padding:4px 8px;font-size:12px}
+
+  .notice{padding:10px 12px;border:1px solid #2b3e6b;background:#0d1730;border-radius:12px}
+
+  /* tabs */
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .tab{padding:8px 12px;border-radius:10px;border:1px solid #26345e;background:#0e1730;color:#9fb2d8;cursor:pointer}
+  .tab.active{background:var(--pri);color:#fff;border-color:transparent}
+
+  @media (max-width:600px){
+    .hide-mobile{display:none}
+  }
+</style>
 </head>
 <body>
-  <header>
-    <div class="brand">ভিডিও প্ল্যাটফর্ম</div>
-    <nav>
-      <a href="#home" onclick="showTab('home')">Home</a>
-      <a href="#trending" onclick="showTab('trending')">Trending</a>
-      <a href="#links" onclick="showTab('links')">Uploaded Links</a>
-    </nav>
-    <div>
-      <button id="btn-login" class="btn secondary">Login</button>
-      <button id="btn-upload" class="btn">Upload</button>
+
+<header>
+  <div class="wrap row">
+    <div class="row grow">
+      <div class="brand">🎬 VShare</div>
+      <span class="pill hide-mobile">Link Upload + Ads + Partner</span>
     </div>
-  </header>
-
-  <main class="container">
-    <div class="layout">
-      <!-- Main feed -->
-      <section>
-        <div id="status" class="card small">Connecting...</div>
-
-        <div id="home-section" class="card">
-          <h3>Home</h3>
-          <!-- Site-wide ad injected by admin (position: top) -->
-          <div id="site-ad-top" class="ad-slot small" style="margin-bottom:10px">Ad slot (admin controlled)</div>
-
-          <div id="feed" class="feed"></div>
-        </div>
-
-        <div id="links-section" class="card hidden" style="margin-top:12px">
-          <h3>Uploaded Links</h3>
-          <div id="links-list"></div>
-          <hr/>
-          <div>
-            <label>Paste external video link</label>
-            <input id="external-url" type="text" placeholder="https://..." />
-            <div style="margin-top:8px">
-              <button id="btn-add-link" class="btn">Add Link</button>
-              <button id="btn-fetch-meta" class="btn secondary">Fetch Metadata</button>
-            </div>
-            <div id="link-meta" class="small" style="margin-top:8px"></div>
-          </div>
-        </div>
-
-        <footer>© Video Platform — Demo</footer>
-      </section>
-
-      <!-- Sidebar -->
-      <aside>
-        <div class="card">
-          <h4>Profile</h4>
-          <div id="profile-area"><div class="small">Not logged in</div></div>
-        </div>
-
-        <div class="card" style="margin-top:12px">
-          <h4>Upload Video</h4>
-          <label>Title</label>
-          <input id="upload-title" type="text" placeholder="Video title" />
-          <label>Description</label>
-          <textarea id="upload-desc" rows="3"></textarea>
-          <label>File</label>
-          <input id="upload-file" type="file" accept="video/*" />
-          <div style="margin-top:8px">
-            <button id="btn-start-upload" class="btn">Upload</button>
-          </div>
-          <div id="upload-progress" class="small" style="margin-top:8px"></div>
-        </div>
-
-        <div class="card" style="margin-top:12px">
-          <h4>Admin Ad Preview</h4>
-          <div id="site-ad-side" class="ad-slot small">Ad slot (admin)</div>
-        </div>
-      </aside>
-    </div>
-  </main>
-
-  <!-- Player Modal -->
-  <div id="player-modal" aria-hidden="true">
-    <div id="player-wrap" class="card">
-      <video id="player" playsinline webkit-playsinline controlslist="nodownload"></video>
-      <div id="player-overlay">Click to show controls</div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button id="btn-like" class="btn">Like</button>
-        <button id="btn-comment" class="btn secondary">Comment</button>
-        <button id="btn-share" class="btn secondary">Share</button>
-      </div>
-      <!-- video-level ad placeholder -->
-      <div id="video-ad-slot" class="ad-slot small" style="margin-top:8px">Video ad (admin-controlled)</div>
-      <div style="position:absolute;left:10px;top:10px"><button id="close-player" class="btn secondary">Close</button></div>
+    <div id="userArea" class="row">
+      <button class="btn secondary" id="btnLoginGoogle">Sign in with Google</button>
+      <button class="btn secondary hidden" id="btnLoginEmail">Email Login</button>
+      <span class="muted" id="whoami"></span>
+      <button class="btn hidden" id="btnUploadOpen">➕ Upload</button>
+      <button class="btn secondary hidden" id="btnAdmin">Admin</button>
+      <button class="btn danger hidden" id="btnLogout">Logout</button>
     </div>
   </div>
+</header>
 
-  <!-- templates -->
-  <template id="video-card-tpl">
-    <div class="card">
-      <div class="video-thumb"><img class="thumb" src="" alt="thumb"/></div>
-      <div class="video-meta">
-        <div class="title strong"></div>
-        <div class="small meta-line"></div>
-      </div>
+<main class="wrap" id="main">
+
+  <div id="siteNotices" class="notice hidden"></div>
+
+  <!-- Top Ads (admin controlled) -->
+  <div id="siteTopAd" class="card hidden"></div>
+
+  <!-- Feed Tabs -->
+  <div class="tabs">
+    <div class="tab active" data-feed="new">New</div>
+    <div class="tab" data-feed="trending">Trending</div>
+    <div class="tab" data-feed="hot">Hot</div>
+    <div class="tab" data-feed="mine">My Uploads</div>
+    <div class="tab" data-feed="history">History</div>
+    <div class="tab" data-feed="shorts">Shorts</div>
+  </div>
+
+  <!-- Videos -->
+  <div id="feed" class="grid"></div>
+
+  <!-- Sidebar Ads -->
+  <div id="siteSideAd" class="card hidden" style="margin-top:16px;"></div>
+
+  <!-- Policies & Contact -->
+  <div class="footer">
+    <div class="row">
+      <span>© <span id="year"></span> VShare</span>
+      <span class="grow"></span>
+      <a href="#" id="openPrivacy">Privacy</a> ·
+      <a href="#" id="openTerms">Terms</a> ·
+      <a href="#" id="openDisclaimer">Disclaimer</a> ·
+      <a href="#" id="openContact">Contact</a>
     </div>
-  </template>
+  </div>
+</main>
 
-  <!-- Firebase & App Logic -->
-  <script type="module">
-  // ---------- FIREBASE CONFIG (you provided) ----------
-  const firebaseConfig = {
-    apiKey: "AIzaSyBIwk_zUPiVrMtPGSh7AVTjO_zgUCt2dp8",
-    authDomain: "videos-37e8f.firebaseapp.com",
-    databaseURL: "https://videos-37e8f-default-rtdb.firebaseio.com",
-    projectId: "videos-37e8f",
-    storageBucket: "videos-37e8f.firebasestorage.app",
-    messagingSenderId: "518714664903",
-    appId: "1:518714664903:web:691c37e0e9978607cadbe2",
-    measurementId: "G-FDY9ZRJZFD"
+<!-- Upload Modal -->
+<div class="modal" id="uploadModal">
+  <div class="box">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h3 style="margin:6px 0">ভিডিও আপলোড / লিংক শেয়ার</h3>
+      <button class="btn danger" id="btnUploadClose">Close</button>
+    </div>
+    <div class="notice" id="uploadTips">
+      YouTube / Vimeo / mp4 link দিন। ডুপ্লিকেট লিংক ব্লক হবে। ৩ বার ডুপ্লিকেটে একাউন্ট সাসপেন্ড।
+    </div>
+    <label>Title</label>
+    <input id="inTitle" class="input" placeholder="Short title" maxlength="120" />
+    <label>Video Link (YouTube/Vimeo/mp4)</label>
+    <input id="inLink" class="input" placeholder="https://youtu.be/..." />
+    <div class="row">
+      <label class="row" style="gap:8px"><input type="checkbox" id="inShort"> <span class="muted">Is Short (vertical)</span></label>
+      <span class="grow"></span>
+      <button class="btn" id="btnUploadDo">Upload / Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Modal -->
+<div class="modal" id="adminModal">
+  <div class="box" style="max-width:980px">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h3 style="margin:6px 0">Admin Panel</h3>
+      <button class="btn danger" id="btnAdminClose">Close</button>
+    </div>
+
+    <div class="tabs" id="adminTabs">
+      <div class="tab active" data-atab="videos">Videos</div>
+      <div class="tab" data-atab="users">Users</div>
+      <div class="tab" data-atab="ads">Ads</div>
+      <div class="tab" data-atab="policies">Policies</div>
+      <div class="tab" data-atab="settings">Settings</div>
+    </div>
+
+    <!-- Videos -->
+    <div id="adminVideos" class="card">
+      <div id="adminVideosList" class="grid"></div>
+    </div>
+
+    <!-- Users -->
+    <div id="adminUsers" class="card hidden">
+      <div id="adminUsersList" class="grid"></div>
+    </div>
+
+    <!-- Ads -->
+    <div id="adminAds" class="card hidden">
+      <label>Enable Ads <input type="checkbox" id="adEnabled"></label>
+      <label class="muted">Top HTML (danger: injected)</label>
+      <textarea id="adTopHtml" class="input" rows="4" placeholder="<div>Top banner</div>"></textarea>
+      <label class="muted">Sidebar HTML</label>
+      <textarea id="adSideHtml" class="input" rows="4" placeholder="<div>Sidebar ad</div>"></textarea>
+      <label class="muted">Preroll HTML (shown 3s on play)</label>
+      <textarea id="adPrerollHtml" class="input" rows="4" placeholder="<div style='padding:20px;background:#000;color:#fff'>Ad…</div>"></textarea>
+      <label class="muted">Midroll Seconds (comma, e.g. 30,120)</label>
+      <input id="adMidSec" class="input" placeholder="30,120" />
+      <div class="row" style="justify-content:flex-end"><button class="btn ok" id="btnSaveAds">Save Ads</button></div>
+      <div class="notice" style="margin-top:8px">⚠️ Admin HTML সরাসরি পেজে inject হয় (innerHTML)। **Admin ছাড়া কেউ লিখতে পারবে না** — Rules দিয়ে সুরক্ষিত রাখো।</div>
+    </div>
+
+    <!-- Policies -->
+    <div id="adminPolicies" class="card hidden">
+      <label>Privacy Policy (md/html)</label>
+      <textarea id="polPrivacy" class="input" rows="6"></textarea>
+      <label>Terms</label>
+      <textarea id="polTerms" class="input" rows="6"></textarea>
+      <label>Disclaimer</label>
+      <textarea id="polDisc" class="input" rows="6"></textarea>
+      <label>Contact Info (text/html)</label>
+      <textarea id="polContact" class="input" rows="4"></textarea>
+      <div class="row" style="justify-content:flex-end"><button class="btn ok" id="btnSavePolicies">Save</button></div>
+    </div>
+
+    <!-- Settings -->
+    <div id="adminSettings" class="card hidden">
+      <label>Banned Words (comma)</label>
+      <input id="setBanned" class="input" placeholder="spam,scam,abuse" />
+      <label>Enable Storage Uploads (future)</label>
+      <input type="checkbox" id="setUploads" />
+      <label>Duplicate Limit → Suspend at</label>
+      <input id="setDupLimit" class="input" type="number" min="1" value="3" />
+      <div class="row" style="justify-content:flex-end"><button class="btn ok" id="btnSaveSettings">Save Settings</button></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Policies Viewer Modal -->
+<div class="modal" id="polModal">
+  <div class="box">
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <h3 id="polTitle" style="margin:6px 0">Policy</h3>
+      <button class="btn danger" id="polClose">Close</button>
+    </div>
+    <div id="polBody" class="muted" style="white-space:pre-wrap"></div>
+  </div>
+</div>
+
+<!-- Firebase SDK v8 (compat for single-file simplicity) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+/** ---------- Firebase Config (YOURS) ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyBIwk_zUPiVrMtPGSh7AVTjO_zgUCt2dp8",
+  authDomain: "videos-37e8f.firebaseapp.com",
+  databaseURL: "https://videos-37e8f-default-rtdb.firebaseio.com",
+  projectId: "videos-37e8f",
+  storageBucket: "videos-37e8f.firebasestorage.app",
+  messagingSenderId: "518714664903",
+  appId: "1:518714664903:web:691c37e0e9978607cadbe2",
+  measurementId: "G-FDY9ZRJZFD"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+/** ---------- State ---------- */
+let me = null;                 // current user
+let isAdmin = false;           // role check
+let settings = { banned:[], uploads:false, dupLimit:3 };
+let ads = { enabled:false, htmlTop:'', htmlSide:'', prerollHtml:'', midSec:'' };
+const YEAR = new Date().getFullYear();
+document.getElementById('year').textContent = YEAR;
+
+/** ---------- Helpers ---------- */
+const qs = s=>document.querySelector(s);
+const qsa = s=>[...document.querySelectorAll(s)];
+const feedEl = qs('#feed');
+const topAdEl = qs('#siteTopAd');
+const sideAdEl = qs('#siteSideAd');
+const noticesEl = qs('#siteNotices');
+
+function toast(msg,type='info'){
+  noticesEl.textContent = msg;
+  noticesEl.classList.remove('hidden');
+  setTimeout(()=>noticesEl.classList.add('hidden'), 3000);
+}
+function id(){ return 'id_'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); }
+function isYouTube(u){ return /youtu\.be|youtube\.com/.test(u); }
+function isMp4(u){ return /\.mp4($|\?)/i.test(u); }
+function ytEmbed(u){
+  if(u.includes('watch?v=')){ const v = (u.split('v=')[1]||'').split('&')[0]; return 'https://www.youtube.com/embed/'+v; }
+  if(u.includes('youtu.be/')){ const v = u.split('youtu.be/')[1].split(/[?&]/)[0]; return 'https://www.youtube.com/embed/'+v; }
+  if(u.includes('/embed/')) return u;
+  return u; // fallback
+}
+function sanitize(s){ return (s||'').replace(/[<>&]/g, c=>({ '<':'&lt;','>':'&gt;','&':'&amp;' }[c])); }
+function hasBanned(text){ return settings.banned.some(w=>text.toLowerCase().includes(w.trim().toLowerCase())).valueOf(); }
+
+/** ---------- Auth UI ---------- */
+const ui = {
+  btnLoginGoogle: qs('#btnLoginGoogle'),
+  btnLoginEmail: qs('#btnLoginEmail'),
+  btnLogout: qs('#btnLogout'),
+  whoami: qs('#whoami'),
+  btnUploadOpen: qs('#btnUploadOpen'),
+  btnAdmin: qs('#btnAdmin')
+};
+ui.btnLoginGoogle.onclick = async ()=>{
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try{
+    await auth.signInWithPopup(provider);
+  }catch(e){
+    // fallback redirect (popup blocked)
+    await auth.signInWithRedirect(provider);
+  }
+};
+ui.btnLogout.onclick = ()=>auth.signOut();
+ui.btnUploadOpen.onclick = ()=>openUpload();
+
+/** ---------- Upload Modal ---------- */
+const up = {
+  modal: qs('#uploadModal'),
+  close: qs('#btnUploadClose'),
+  do: qs('#btnUploadDo'),
+  title: qs('#inTitle'),
+  link: qs('#inLink'),
+  isShort: qs('#inShort')
+};
+function openUpload(){ up.modal.style.display='flex'; }
+up.close.onclick = ()=> up.modal.style.display='none';
+
+up.do.onclick = async ()=>{
+  const title = up.title.value.trim();
+  const link = up.link.value.trim();
+  const isShort = up.isShort.checked;
+  if(!me){ toast('Please login'); return; }
+  if(!title || !link){ toast('Title and link required'); return; }
+  if(hasBanned(title)){ toast('Title contains banned words'); return; }
+
+  // duplicate check: scan videos by url
+  const snap = await db.ref('videos').orderByChild('url').equalTo(link).once('value');
+  if(snap.exists()){
+    // bump warning & maybe suspend
+    const uref = db.ref('users/'+me.uid);
+    const us = (await uref.once('value')).val()||{};
+    const warns = (us.warnings||0)+1;
+    const limit = settings.dupLimit||3;
+    const suspended = warns>=limit;
+    await uref.update({ warnings: warns, suspended: suspended, lastViolation: Date.now() });
+    toast(suspended ? 'Duplicate detected. Account suspended.' : 'Duplicate detected. Warning issued.');
+    up.modal.style.display='none';
+    return;
+  }
+
+  // create video
+  const vid = id();
+  const doc = {
+    id: vid,
+    ownerId: me.uid,
+    ownerName: me.displayName||me.email||'User',
+    title, url: link, type: isMp4(link)?'mp4': (isYouTube(link)?'youtube':'link'),
+    isShort: !!isShort,
+    createdAt: Date.now(),
+    views:0, likes:0, comments:0, shares:0, visibility:'public'
+  };
+  await db.ref('videos/'+vid).set(doc);
+  await db.ref('userVideos/'+me.uid+'/'+vid).set(true);
+  toast('Uploaded!');
+  up.title.value=''; up.link.value=''; up.isShort.checked=false;
+  up.modal.style.display='none';
+};
+
+/** ---------- Admin Modal ---------- */
+const admin = {
+  modal: qs('#adminModal'),
+  close: qs('#btnAdminClose'),
+  tabs: qs('#adminTabs'),
+  btn: ui.btnAdmin
+};
+admin.btn.onclick = ()=>{ admin.modal.style.display='flex'; loadAdmin(); };
+admin.close.onclick = ()=> admin.modal.style.display='none';
+
+admin.tabs.addEventListener('click', e=>{
+  const t = e.target.closest('.tab'); if(!t) return;
+  qsa('#adminTabs .tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  const name = t.dataset.atab;
+  qsa('#adminVideos,#adminUsers,#adminAds,#adminPolicies,#adminSettings').forEach(x=>x.classList.add('hidden'));
+  qs('#admin'+name[0].toUpperCase()+name.slice(1)).classList.remove('hidden');
+});
+
+async function loadAdmin(){
+  // videos
+  const vlistEl = qs('#adminVideosList'); vlistEl.innerHTML = '';
+  const vSnap = await db.ref('videos').orderByChild('createdAt').limitToLast(200).once('value');
+  const all = vSnap.val()||{};
+  Object.values(all).reverse().forEach(v=>{
+    const card = document.createElement('div'); card.className='card';
+    card.innerHTML = `
+      <div class="row" style="justify-content:space-between">
+        <div><b>${sanitize(v.title)}</b><div class="muted">${v.id}</div></div>
+        <div class="row">
+          <span class="tag">views ${v.views||0}</span>
+          <span class="tag">likes ${v.likes||0}</span>
+          <span class="tag">cmts ${v.comments||0}</span>
+        </div>
+      </div>
+      <div class="row" style="margin-top:8px;gap:6px">
+        <button class="btn secondary" data-act="hide" data-id="${v.id}">${v.visibility==='public'?'Hide':'Unhide'}</button>
+        <button class="btn danger" data-act="del" data-id="${v.id}">Delete</button>
+      </div>
+    `;
+    vlistEl.appendChild(card);
+  });
+  vlistEl.onclick = async e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    const id = b.dataset.id; const act = b.dataset.act;
+    if(act==='del'){ if(confirm('Delete video?')){ await db.ref('videos/'+id).remove(); await db.ref('likes/'+id).remove(); await db.ref('comments/'+id).remove(); toast('Deleted'); loadAdmin(); } }
+    if(act==='hide'){ const cur = (await db.ref('videos/'+id).once('value')).val(); const vis = cur.visibility==='public'?'hidden':'public'; await db.ref('videos/'+id).update({visibility:vis}); toast('Updated'); loadAdmin(); }
   };
 
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-auth.js";
-  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-firestore.js";
-  import { getStorage, ref as sref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-storage.js";
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
-
-  // DOM elements
-  const statusEl = document.getElementById('status');
-  const feedEl = document.getElementById('feed');
-  const tpl = document.getElementById('video-card-tpl');
-  const profileArea = document.getElementById('profile-area');
-  const btnLogin = document.getElementById('btn-login');
-  const btnStartUpload = document.getElementById('btn-start-upload');
-  const uploadFile = document.getElementById('upload-file');
-  const uploadTitle = document.getElementById('upload-title');
-  const uploadDesc = document.getElementById('upload-desc');
-  const uploadProgress = document.getElementById('upload-progress');
-  const playerModal = document.getElementById('player-modal');
-  const player = document.getElementById('player');
-  const playerOverlay = document.getElementById('player-overlay');
-  const closePlayer = document.getElementById('close-player');
-  const siteAdTop = document.getElementById('site-ad-top');
-  const siteAdSide = document.getElementById('site-ad-side');
-  const videoAdSlot = document.getElementById('video-ad-slot');
-
-  let currentUser = null;
-  let currentPlayingId = null;
-  let adsDocUnsub = null; // to hold real-time listener
-
-  // show/hide tabs
-  function showTab(name){
-    document.getElementById('home-section').classList.toggle('hidden', name!=='home');
-    document.getElementById('links-section').classList.toggle('hidden', name!=='links');
-    document.getElementById('trending-section')?.classList.toggle('hidden', name!=='trending');
-  }
-
-  // ---------- Auth handlers ----------
-  btnLogin.addEventListener('click', async ()=>{
-    if (currentUser){ await signOut(auth); return; }
-    const useGoogle = confirm('Sign in with Google? Cancel for Email flow.');
-    if (useGoogle){
-      try { await signInWithPopup(auth, new GoogleAuthProvider()); }
-      catch(e){ alert('Google sign-in failed: '+e.message); }
-    } else {
-      const email = prompt('Email:'); if(!email) return;
-      const pw = prompt('Password: (6+ chars)'); if(!pw) return;
-      try {
-        await signInWithEmailAndPassword(auth, email, pw);
-      } catch(err){
-        // try signup
-        try { await createUserWithEmailAndPassword(auth, email, pw); alert('Account created and signed in'); }
-        catch(e2){ alert('Auth error: '+e2.message); }
-      }
-    }
+  // users
+  const ulistEl = qs('#adminUsersList'); ulistEl.innerHTML='';
+  const uSnap = await db.ref('users').limitToLast(300).once('value');
+  const users = uSnap.val()||{};
+  Object.entries(users).forEach(([uid,u])=>{
+    const el = document.createElement('div'); el.className='card';
+    el.innerHTML = `
+      <div><b>${sanitize(u.name||u.email||uid)}</b> <span class="tag">${u.role||'user'}</span></div>
+      <div class="muted">warn:${u.warnings||0} · suspended:${!!u.suspended} · partner:${!!u.partner}</div>
+      <div class="row" style="margin-top:8px;gap:6px">
+        <button class="btn secondary" data-u="${uid}" data-act="toggle-admin">${u.role==='admin'?'Make User':'Make Admin'}</button>
+        <button class="btn secondary" data-u="${uid}" data-act="toggle-partner">${u.partner?'Revoke Partner':'Approve Partner'}</button>
+        <button class="btn danger" data-u="${uid}" data-act="toggle-suspend">${u.suspended?'Unsuspend':'Suspend'}</button>
+        <button class="btn secondary" data-u="${uid}" data-act="reset-warn">Reset Warnings</button>
+      </div>
+    `;
+    ulistEl.appendChild(el);
   });
+  ulistEl.onclick = async e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    const uid = b.dataset.u; const act = b.dataset.act;
+    const ref = db.ref('users/'+uid);
+    const cur = (await ref.once('value')).val()||{};
+    if(act==='toggle-admin'){ await ref.update({role: cur.role==='admin'?'user':'admin'}); }
+    if(act==='toggle-partner'){ await ref.update({partner: !cur.partner}); }
+    if(act==='toggle-suspend'){ await ref.update({suspended: !cur.suspended}); }
+    if(act==='reset-warn'){ await ref.update({warnings:0}); }
+    toast('Updated'); loadAdmin();
+  };
 
-  onAuthStateChanged(auth, async user=>{
-    currentUser = user;
-    if (user){
-      btnLogin.textContent = 'Logout';
-      await ensureUserDoc(user);
-      renderProfile(user);
-    } else {
-      btnLogin.textContent = 'Login';
-      profileArea.innerHTML = '<div class="small">Not logged in</div>';
-    }
-  });
+  // ads
+  const adRef = db.ref('admin/ads');
+  const adSnap = await adRef.once('value'); Object.assign(ads, adSnap.val()||{});
+  qs('#adEnabled').checked = !!ads.enabled;
+  qs('#adTopHtml').value = ads.htmlTop||'';
+  qs('#adSideHtml').value = ads.htmlSide||'';
+  qs('#adPrerollHtml').value = ads.prerollHtml||'';
+  qs('#adMidSec').value = ads.midSec||'';
+  qs('#btnSaveAds').onclick = async ()=>{
+    const data = {
+      enabled: qs('#adEnabled').checked,
+      htmlTop: qs('#adTopHtml').value,
+      htmlSide: qs('#adSideHtml').value,
+      prerollHtml: qs('#adPrerollHtml').value,
+      midSec: qs('#adMidSec').value
+    };
+    await adRef.set(data);
+    toast('Ads saved');
+    applyAdsLive(data);
+  };
 
-  async function ensureUserDoc(user){
-    const uRef = doc(db,'users',user.uid);
-    const uSnap = await getDoc(uRef);
-    if (!uSnap.exists()){
-      await setDoc(uRef, { displayName: user.displayName||'', email: user.email||'', role:'user', createdAt: serverTimestamp() });
-    }
-  }
-
-  async function renderProfile(user){
-    const uSnap = await getDoc(doc(db,'users',user.uid));
-    const data = uSnap.exists()? uSnap.data() : {};
-    profileArea.innerHTML = `<div><strong>${data.displayName || user.email || 'User'}</strong></div><div class="small">${user.email||''}</div><div style="margin-top:8px" class="small">UID: ${user.uid}</div>`;
-  }
-
-  // ---------- Load feed from Firestore ----------
-  async function loadFeed(){
-    statusEl.textContent = 'Loading videos...';
-    try {
-      const q = query(collection(db,'videos'), where('visibility','==','public'), orderBy('createdAt','desc'));
-      const snaps = await getDocs(q);
-      feedEl.innerHTML = '';
-      snaps.forEach(snap=>{
-        const v = snap.data();
-        feedEl.appendChild(makeVideoCard(snap.id, v));
-      });
-      statusEl.textContent = 'Videos loaded';
-    } catch(e){
-      statusEl.textContent = 'Failed to load videos: '+e.message;
-      // show placeholders
-      feedEl.innerHTML = '';
-      for (let i=1;i<=6;i++){
-        const card = document.createElement('div'); card.className='card';
-        card.innerHTML = `<div class="video-thumb"><img src="https://picsum.photos/seed/${i}/480/270" /></div><div class="video-meta"><div class="title">Placeholder ${i}</div></div>`;
-        feedEl.appendChild(card);
-      }
-    }
-  }
-
-  function makeVideoCard(id, v){
-    const node = tpl.content.cloneNode(true);
-    const el = node.querySelector('.card');
-    const img = el.querySelector('.thumb');
-    const title = el.querySelector('.title');
-    const meta = el.querySelector('.meta-line');
-    img.src = v.thumbnail || `https://picsum.photos/seed/${id}/480/270`;
-    title.textContent = v.title || 'Untitled';
-    meta.textContent = `${v.views||0} views • ${v.likes||0} likes`;
-    img.addEventListener('click', ()=> openPlayerForVideo(id, v));
-    return el;
-  }
-
-  // ---------- Player & Video play ----------
-  async function openPlayerForVideo(id, v){
-    currentPlayingId = id;
-    try {
-      let src = null;
-      if (v.type === 'external' && v.externalLink) src = v.externalLink;
-      else if (v.storagePath) {
-        src = await getDownloadURL(sref(storage, v.storagePath));
-      } else { alert('No source'); return; }
-      openPlayer(src, id, v);
-    } catch(e){ alert('Play error: '+e.message); }
-  }
-
-  function openPlayer(src, id, v){
-    player.src = src;
-    player.currentTime = 0;
-    playerModal.style.display = 'flex';
-    playerOverlay.style.display = 'flex';
-    player.controls = false;
-    // increment view
-    updateDoc(doc(db,'videos',id), { views: increment(1) }).catch(()=>{});
-    // if admin set video-level ad for this video, show it (handled by ads listener)
-  }
-
-  player.addEventListener('click', function onClickOnce(){
-    player.controls = true;
-    playerOverlay.style.display = 'none';
-    player.removeEventListener('click', onClickOnce);
-  });
-
-  closePlayer.addEventListener('click', ()=> {
-    player.pause(); player.src=''; playerModal.style.display='none';
-    currentPlayingId = null;
-  });
-
-  // like/comment/share simple flows
-  document.getElementById('btn-like').addEventListener('click', async ()=>{
-    if (!currentUser) return alert('Login to like');
-    if (!currentPlayingId) return;
-    try { await updateDoc(doc(db,'videos',currentPlayingId), { likes: increment(1) }); alert('Liked'); }
-    catch(e){ alert('Like failed: '+e.message); }
-  });
-
-  document.getElementById('btn-comment').addEventListener('click', async ()=>{
-    if (!currentUser) return alert('Login to comment');
-    if (!currentPlayingId) return;
-    const text = prompt('Your comment:'); if (!text) return;
-    try { await addDoc(collection(db,'comments'), { videoId: currentPlayingId, authorId: currentUser.uid, text, createdAt: serverTimestamp() });
-      await updateDoc(doc(db,'videos',currentPlayingId), { commentsCount: increment(1) }); alert('Comment posted'); }
-    catch(e){ alert('Comment failed: '+e.message); }
-  });
-
-  document.getElementById('btn-share').addEventListener('click', ()=>{
-    if (!currentPlayingId) return;
-    const link = location.origin + location.pathname + '?v=' + currentPlayingId;
-    navigator.clipboard?.writeText(link).then(()=> alert('Link copied to clipboard'));
-  });
-
-  // ---------- Upload flow ----------
-  btnStartUpload.addEventListener('click', async ()=>{
-    if (!currentUser) return alert('Login to upload');
-    const file = uploadFile.files[0];
-    const title = uploadTitle.value.trim();
-    const desc = uploadDesc.value.trim();
-    if (!file || !title) return alert('File and title required');
-    try {
-      uploadProgress.textContent = 'Starting...';
-      const vidId = 'vid_' + Date.now();
-      const path = `videos/${currentUser.uid}/${vidId}/${file.name}`;
-      const ref = sref(storage, path);
-      const task = uploadBytesResumable(ref, file);
-      task.on('state_changed', snap=>{
-        const pct = Math.round((snap.bytesTransferred/snap.totalBytes)*100);
-        uploadProgress.textContent = `Uploading ${pct}%`;
-      }, err => { uploadProgress.textContent = 'Upload error: '+err.message }, async ()=>{
-        const url = await getDownloadURL(task.snapshot.ref);
-        // create video doc
-        const videoDoc = {
-          ownerId: currentUser.uid,
-          title,
-          description: desc,
-          storagePath: path,
-          thumbnail: null,
-          type: 'upload',
-          createdAt: serverTimestamp(),
-          visibility: 'public',
-          views: 0,
-          likes: 0,
-          commentsCount: 0,
-          adsEnabled: false,
-          adConfig: {}
-        };
-        await setDoc(doc(db,'videos',vidId), videoDoc);
-        uploadProgress.textContent = 'Upload complete';
-        uploadTitle.value=''; uploadDesc.value=''; uploadFile.value='';
-        await loadFeed();
-      });
-    } catch(e){ uploadProgress.textContent = 'Upload failed: '+e.message; }
-  });
-
-  // ---------- External link handling ----------
-  document.getElementById('btn-add-link').addEventListener('click', async ()=>{
-    if (!currentUser) return alert('Login to add link');
-    const url = document.getElementById('external-url').value.trim(); if (!url) return alert('Enter URL');
-    const title = prompt('Title for the link:') || 'External video';
-    const vidId = 'vid_' + Date.now();
-    await setDoc(doc(db,'videos',vidId), {
-      ownerId: currentUser.uid,
-      title,
-      description: '',
-      storagePath: '',
-      externalLink: url,
-      thumbnail: null,
-      type: 'external',
-      createdAt: serverTimestamp(),
-      visibility: 'public',
-      views: 0,
-      likes: 0,
-      commentsCount: 0,
-      adsEnabled: false,
-      adConfig: {}
+  // policies
+  const polRef = db.ref('admin/policies');
+  const polSnap = await polRef.once('value');
+  const pol = polSnap.val()||{};
+  qs('#polPrivacy').value = pol.privacy||defaultPrivacy();
+  qs('#polTerms').value = pol.terms||defaultTerms();
+  qs('#polDisc').value = pol.disclaimer||defaultDisclaimer();
+  qs('#polContact').value = pol.contact||'Email: support@example.com';
+  qs('#btnSavePolicies').onclick = async ()=>{
+    await polRef.set({
+      privacy: qs('#polPrivacy').value,
+      terms: qs('#polTerms').value,
+      disclaimer: qs('#polDisc').value,
+      contact: qs('#polContact').value
     });
-    alert('Link added'); document.getElementById('external-url').value='';
-    loadFeed();
-  });
+    toast('Policies saved');
+  };
 
-  document.getElementById('btn-fetch-meta').addEventListener('click', async ()=>{
-    const url = document.getElementById('external-url').value.trim(); if (!url) return alert('Enter URL');
-    // Fetching OG tags client-side often fails due to CORS — instruct user
-    try {
-      const res = await fetch(url, { mode: 'cors' });
-      const html = await res.text();
-      const titleMatch = html.match(/<meta\\s+property=["']og:title["']\\s+content=["']([^"']+)["']/i) || html.match(/<title>([^<]+)<\\/i);
-      const imgMatch = html.match(/<meta\\s+property=["']og:image["']\\s+content=["']([^"']+)["']/i);
-      const t = titleMatch ? titleMatch[1] : '(no title)';
-      const im = imgMatch ? imgMatch[1] : null;
-      document.getElementById('link-meta').textContent = `Title: ${t}${im ? ' (thumbnail found)' : ''}`;
-    } catch(e){
-      document.getElementById('link-meta').textContent = 'Metadata fetch blocked by CORS. Use server-side metadata or paste manually.';
+  // settings
+  const setRef = db.ref('admin/settings');
+  const setSnap = await setRef.once('value');
+  Object.assign(settings, setSnap.val()||{});
+  qs('#setBanned').value = (settings.banned||[]).join(',');
+  qs('#setUploads').checked = !!settings.uploads;
+  qs('#setDupLimit').value = settings.dupLimit||3;
+  qs('#btnSaveSettings').onclick = async ()=>{
+    const data = {
+      banned: qs('#setBanned').value.split(',').map(s=>s.trim()).filter(Boolean),
+      uploads: qs('#setUploads').checked,
+      dupLimit: parseInt(qs('#setDupLimit').value||'3',10)
+    };
+    await setRef.set(data);
+    settings = data;
+    toast('Settings saved');
+  };
+}
+
+/** ---------- Feed ---------- */
+let currentFeed = 'new';
+qsa('.tabs .tab').forEach(t=>t.onclick=()=>{ qsa('.tabs .tab').forEach(x=>x.classList.remove('active')); t.classList.add('active'); currentFeed = t.dataset.feed; loadFeed(); });
+
+async function loadFeed(){
+  feedEl.innerHTML = '';
+  let snap = await db.ref('videos').once('value');
+  let arr = Object.values(snap.val()||{});
+  // filters
+  if(currentFeed==='mine' && me) arr = arr.filter(v=>v.ownerId===me.uid);
+  if(currentFeed==='shorts') arr = arr.filter(v=>v.isShort);
+  if(currentFeed==='trending') arr = arr.sort((a,b)=>(b.likes||0)-(a.likes||0));
+  if(currentFeed==='hot') arr = arr.sort((a,b)=>((b.likes||0)+(b.comments||0)*2+(b.views||0)/5)-((a.likes||0)+(a.comments||0)*2+(a.views||0)/5));
+  if(currentFeed==='history' && me){
+    const hs = (await db.ref('history/'+me.uid).limitToLast(200).once('value')).val()||{};
+    const ids = Object.keys(hs);
+    arr = arr.filter(v=>ids.includes(v.id));
+    arr.sort((a,b)=>(hs[b.id]?.at||0)-(hs[a.id]?.at||0));
+  } else {
+    // default new
+    arr = arr.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  }
+
+  arr.forEach(v=>feedEl.appendChild(renderVideoCard(v)));
+}
+
+function renderVideoCard(v){
+  const card = document.createElement('div'); card.className='card';
+  const isHidden = v.visibility==='hidden';
+  const title = sanitize(v.title);
+  card.innerHTML = `
+    <div class="row" style="justify-content:space-between">
+      <div class="row" style="gap:8px"><span><b>${title}</b></span>${v.isShort?'<span class="tag">Short</span>':''}${isHidden?'<span class="tag">Hidden</span>':''}</div>
+      <span class="muted">${new Date(v.createdAt||Date.now()).toLocaleString()}</span>
+    </div>
+    <div class="player" data-id="${v.id}">
+      <div class="ad-badge hidden">Ad</div>
+      <div class="thumb">
+        ${isYouTube(v.url) ? `<img src="https://img.youtube.com/vi/${ytEmbed(v.url).split('/').pop()}/hqdefault.jpg" alt="thumb" style="width:100%;height:100%;object-fit:cover">` : `<div class="muted">Preview</div>`}
+      </div>
+      <div class="overlay"><div class="play">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+      </div></div>
+      <div class="ctrls row">
+        <button class="btn secondary" data-act="mute">Mute</button>
+        <button class="btn secondary" data-act="fs">Fullscreen</button>
+      </div>
+      <div class="ad-mask"></div>
+    </div>
+    <div class="row" style="gap:6px;margin-top:10px">
+      <button class="btn secondary" data-like="${v.id}">👍 Like <span class="muted" id="lk_${v.id}">${v.likes||0}</span></button>
+      <button class="btn secondary" data-comment="${v.id}">💬 Comment <span class="muted" id="cm_${v.id}">${v.comments||0}</span></button>
+      <button class="btn secondary" data-share="${v.id}">🔗 Share <span class="muted" id="sh_${v.id}">${v.shares||0}</span></button>
+      <span class="grow"></span>
+      <span class="muted">by ${sanitize(v.ownerName||'User')}</span>
+    </div>
+    <div class="card hidden" id="cbox_${v.id}">
+      <div class="row"><input id="cin_${v.id}" class="input" placeholder="Write a comment..."><button class="btn" data-sendc="${v.id}">Send</button></div>
+      <div id="clist_${v.id}" style="margin-top:8px;display:grid;gap:8px"></div>
+    </div>
+  `;
+  // bind player
+  bindPlayer(card.querySelector('.player'), v);
+  // counters live
+  db.ref('likes/'+v.id).on('value', s=>{ const val = s.val()||{}; qs('#lk_'+v.id)?.textContent = Object.keys(val).length; });
+  db.ref('comments/'+v.id).on('value', s=>{ const val = s.val()||{}; qs('#cm_'+v.id)?.textContent = Object.keys(val).length; renderComments(v.id, val); });
+  db.ref('shares/'+v.id).on('value', s=>{ qs('#sh_'+v.id)?.textContent = s.val()||0; });
+  return card;
+}
+
+/** ---------- Player ---------- */
+function bindPlayer(el, v){
+  const overlay = el.querySelector('.overlay');
+  const mask = el.querySelector('.ad-mask');
+  const badge = el.querySelector('.ad-badge');
+
+  let videoEl = null, iframeEl = null, muted=true, started=false;
+
+  function showControls(show){ el.querySelector('.ctrls').style.opacity = show?1:0; }
+
+  function playNow(){
+    overlay.classList.add('hidden');
+    showControls(true);
+    // preroll ad
+    if(ads.enabled && ads.prerollHtml){
+      badge.classList.remove('hidden');
+      mask.innerHTML = ads.prerollHtml;
+      mask.classList.add('show');
+      setTimeout(()=>{ mask.classList.remove('show'); badge.classList.add('hidden'); startContent(); }, 3000);
+    }else{
+      startContent();
+    }
+  }
+
+  function startContent(){
+    if(isYouTube(v.url)){
+      iframeEl = document.createElement('iframe');
+      iframeEl.src = ytEmbed(v.url) + '?autoplay=1&playsinline=1';
+      iframeEl.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      iframeEl.allowFullscreen = true;
+      iframeEl.style.width='100%'; iframeEl.style.height='320px'; iframeEl.style.border='0';
+      el.querySelector('.thumb').replaceWith(iframeEl);
+      // fallback: if iframe error, try no-cookie
+      iframeEl.addEventListener('error', ()=>{
+        iframeEl.src = ytEmbed(v.url).replace('youtube.com','youtube-nocookie.com') + '?autoplay=1&playsinline=1';
+      });
+    }else if(isMp4(v.url)){
+      videoEl = document.createElement('video');
+      videoEl.src = v.url; videoEl.controls=false; videoEl.autoplay=true; videoEl.muted=true; videoEl.playsInline=true;
+      videoEl.style.width='100%'; videoEl.style.height='320px'; videoEl.addEventListener('error', ()=>{
+        // simple silent fallback: reload once
+        if(!videoEl.dataset.retry){ videoEl.dataset.retry=1; videoEl.load(); videoEl.play().catch(()=>{}); }
+      });
+      el.querySelector('.thumb').replaceWith(videoEl);
+    }else{
+      // generic embed
+      iframeEl = document.createElement('iframe');
+      iframeEl.src = v.url; iframeEl.allowFullscreen = true;
+      iframeEl.style.width='100%'; iframeEl.style.height='320px'; iframeEl.style.border='0';
+      el.querySelector('.thumb').replaceWith(iframeEl);
+    }
+    started = true;
+    // views++
+    db.ref('videos/'+v.id+'/views').transaction(n=>(n||0)+1);
+    if(me) db.ref('history/'+me.uid+'/'+v.id).set({at:Date.now()});
+  }
+
+  overlay.onclick = playNow;
+
+  el.addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    const act = b.dataset.act;
+    if(act==='mute' && videoEl){ muted=!muted; videoEl.muted=muted; b.textContent = muted?'Unmute':'Mute'; }
+    if(act==='fs'){
+      const target = videoEl||iframeEl||el;
+      if(target.requestFullscreen) target.requestFullscreen();
     }
   });
 
-  // ---------- Admin-controlled ads: real-time listener ----------
-  // admin sets doc at collection 'admin' doc 'ads'
-  function startAdsListener(){
-    const adsRef = doc(db,'admin','ads');
-    if (adsDocUnsub) adsDocUnsub();
-    // real-time listener
-    adsDocUnsub = onSnapshot(adsRef, (snap)=>{
-      if (!snap.exists()) {
-        siteAdTop.innerHTML = 'Ad slot (admin controlled)';
-        siteAdSide.innerHTML = 'Ad slot (admin controlled)';
-        videoAdSlot.innerHTML = 'Video ad (admin-controlled)';
-        return;
+  // midroll simulation: show mask at configured seconds (only for <video>)
+  if(isMp4(v.url) && ads.enabled && (ads.midSec||'').trim()){
+    const secs = ads.midSec.split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n));
+    const checkTick = ()=>{
+      if(!videoEl) return;
+      const t = Math.floor(videoEl.currentTime||0);
+      if(secs.includes(t)){
+        badge.classList.remove('hidden');
+        mask.innerHTML = ads.prerollHtml||'<div style="padding:20px;background:#000;color:#fff">Ad…</div>';
+        mask.classList.add('show');
+        setTimeout(()=>{ mask.classList.remove('show'); badge.classList.add('hidden'); }, 3000);
       }
-      const data = snap.data();
-      // Site-wide HTML injection
-      if (data.enabled && data.html && data.position && data.position.includes('site')) {
-        // CAUTION: we inject admin HTML as-is. Only admins should have write access.
-        siteAdTop.innerHTML = data.html;
-        siteAdSide.innerHTML = data.html;
-      } else {
-        siteAdTop.innerHTML = 'Ad slot (admin controlled)';
-        siteAdSide.innerHTML = 'Ad slot (admin controlled)';
-      }
-      // Video-level ad: if vastTag present & enabled, show notice and store for when video plays
-      if (data.enabled && data.vastTag && data.position && data.position.includes('video')) {
-        // store in global variable to be used when video plays
-        window.ADMIN_VIDEO_AD = data.vastTag;
-        videoAdSlot.innerHTML = 'Video ad configured (will play on video start)';
-      } else {
-        window.ADMIN_VIDEO_AD = null;
-        if (!data.html) videoAdSlot.innerHTML = 'Video ad (admin-controlled)';
-      }
-    }, err => { console.warn('ads listener error', err); });
+      requestAnimationFrame(checkTick);
+    };
+    requestAnimationFrame(checkTick);
   }
+}
 
-  // Show ads for playing video (simulated for VAST)
-  async function showAdminVideoAdIfAny(){
-    const vast = window.ADMIN_VIDEO_AD;
-    if (!vast) return;
-    // In production: integrate IMA SDK or video.js VAST plugin. Here we simulate a 3s ad overlay.
-    const prevPaused = player.paused;
-    player.pause();
-    const old = videoAdSlot.innerHTML;
-    videoAdSlot.innerHTML = 'Playing ad...';
-    await new Promise(r=>setTimeout(r,3000));
-    videoAdSlot.innerHTML = old;
-    if (!prevPaused) player.play();
-  }
-
-  // attach to player play event
-  player.addEventListener('play', ()=> {
-    // when playback starts, if admin video ad present, play it once
-    showAdminVideoAdIfAny().catch(()=>{});
+/** ---------- Comments ---------- */
+function renderComments(vid, data){
+  const list = qs('#clist_'+vid); if(!list) return;
+  list.innerHTML = '';
+  Object.entries(data||{}).slice(-50).forEach(([cid,c])=>{
+    const row = document.createElement('div'); row.className='row'; row.style.gap='6px';
+    row.innerHTML = `<span class="tag">${sanitize(c.userName||'User')}</span><span>${sanitize(c.text)}</span><span class="grow"></span>${
+      (me && (me.uid===c.uid || isAdmin)) ? `<button class="btn danger" data-delc="${cid}" data-vid="${vid}">Delete</button>` : ''
+    }`;
+    list.appendChild(row);
   });
+}
+feedEl.addEventListener('click', async e=>{
+  const likeBtn = e.target.closest('button[data-like]');
+  const cmtBtn  = e.target.closest('button[data-comment]');
+  const sendBtn = e.target.closest('button[data-sendc]');
+  const delCBtn = e.target.closest('button[data-delc]');
+  const shareBtn= e.target.closest('button[data-share]');
+  if(likeBtn){
+    if(!me) return toast('Login required');
+    const vid = likeBtn.dataset.like;
+    const ref = db.ref('likes/'+vid+'/'+me.uid);
+    const has = (await ref.once('value')).exists();
+    if(has){ await ref.remove(); } else { await ref.set(true); }
+    const cnt = (await db.ref('likes/'+vid).once('value')).numChildren();
+    await db.ref('videos/'+vid).update({likes:cnt});
+  }
+  if(cmtBtn){
+    const vid=cmtBtn.dataset.comment; qs('#cbox_'+vid).classList.toggle('hidden');
+  }
+  if(sendBtn){
+    if(!me) return toast('Login required');
+    const vid = sendBtn.dataset.sendc;
+    const tx = qs('#cin_'+vid).value.trim(); if(!tx) return;
+    if(hasBanned(tx)) return toast('Comment blocked (banned words)');
+    const c = { uid:me.uid, userName: me.displayName||me.email||'User', text:tx, at:Date.now() };
+    await db.ref('comments/'+vid+'/'+id()).set(c);
+    const cnt = (await db.ref('comments/'+vid).once('value')).numChildren();
+    await db.ref('videos/'+vid).update({comments:cnt});
+    qs('#cin_'+vid).value='';
+  }
+  if(delCBtn){
+    const vid = delCBtn.dataset.vid, cid=delCBtn.dataset.delc;
+    await db.ref('comments/'+vid+'/'+cid).remove();
+    const cnt = (await db.ref('comments/'+vid).once('value')).numChildren();
+    await db.ref('videos/'+vid).update({comments:cnt});
+  }
+  if(shareBtn){
+    const vid = shareBtn.dataset.share;
+    const url = location.origin+location.pathname+'#v='+vid;
+    try{ await navigator.clipboard.writeText(url); toast('Link copied'); }catch(e){ prompt('Copy link', url); }
+    db.ref('shares/'+vid).transaction(n=>(n||0)+1);
+    db.ref('videos/'+vid+'/shares').transaction(n=>(n||0)+1);
+  }
+});
 
-  // ---------- Start ----------
+/** ---------- Policies (viewer) ---------- */
+const polModal = qs('#polModal'), polTitle = qs('#polTitle'), polBody = qs('#polBody');
+const openPolicy = async (key,title)=>{
+  polTitle.textContent = title;
+  const pol = (await db.ref('admin/policies').once('value')).val()||{};
+  polBody.textContent = (pol[key] || defaultByKey(key));
+  polModal.style.display='flex';
+};
+qs('#polClose').onclick = ()=> polModal.style.display='none';
+qs('#openPrivacy').onclick = e=>{ e.preventDefault(); openPolicy('privacy','Privacy Policy'); };
+qs('#openTerms').onclick = e=>{ e.preventDefault(); openPolicy('terms','Terms'); };
+qs('#openDisclaimer').onclick = e=>{ e.preventDefault(); openPolicy('disclaimer','Disclaimer'); };
+qs('#openContact').onclick = e=>{ e.preventDefault(); openPolicy('contact','Contact'); };
+
+function defaultByKey(k){
+  if(k==='privacy') return defaultPrivacy();
+  if(k==='terms') return defaultTerms();
+  if(k==='disclaimer') return defaultDisclaimer();
+  if(k==='contact') return 'Email: support@example.com';
+  return '';
+}
+function defaultPrivacy(){return 'Privacy (BN/EN): আমরা ইউজারের ডেটা সুরক্ষিত রাখি। কেবল অথেন্টিকেটেড ইউজার ডেটা দেখতে/লিখতে পারে। We do not sell data. Cookies for auth only.'}
+function defaultTerms(){return 'Terms: কোন কপিরাইটেড কনটেন্ট অনুমতি ছাড়া আপলোড করলে সতর্কতা/সাসপেনশন হবে। ডুপ্লিকেট লিংক ব্লক করা হয়।'}
+function defaultDisclaimer(){return 'Disclaimer: থার্ড-পার্টি ভিডিও লিঙ্কের কনটেন্ট তাদের নিজস্ব। কোনো দাবির জন্য আপলোডারের দায় প্রযোজ্য।'}
+
+/** ---------- Ads Live Injection ---------- */
+db.ref('admin/ads').on('value', s=>{
+  const a = s.val()||{};
+  ads = Object.assign({enabled:false}, a);
+  applyAdsLive(ads);
+});
+function applyAdsLive(a){
+  // top
+  if(a.enabled && (a.htmlTop||'').trim()){
+    topAdEl.innerHTML = a.htmlTop; topAdEl.classList.remove('hidden');
+  }else{ topAdEl.classList.add('hidden'); topAdEl.innerHTML=''; }
+  // side
+  if(a.enabled && (a.htmlSide||'').trim()){
+    sideAdEl.innerHTML = a.htmlSide; sideAdEl.classList.remove('hidden');
+  }else{ sideAdEl.classList.add('hidden'); sideAdEl.innerHTML=''; }
+}
+
+/** ---------- Auth State + Bootstrap ---------- */
+auth.onAuthStateChanged(async (u)=>{
+  me = u||null;
+  if(!me){
+    ui.btnLoginGoogle.classList.remove('hidden');
+    ui.btnLogout.classList.add('hidden');
+    ui.btnUploadOpen.classList.add('hidden');
+    ui.btnAdmin.classList.add('hidden');
+    ui.whoami.textContent = '';
+  }else{
+    ui.btnLoginGoogle.classList.add('hidden');
+    ui.btnLogout.classList.remove('hidden');
+    ui.btnUploadOpen.classList.remove('hidden');
+    ui.whoami.textContent = 'Hi, '+(me.displayName||me.email);
+    // ensure user doc
+    const uref = db.ref('users/'+me.uid);
+    const curr = (await uref.once('value')).val();
+    if(!curr){
+      await uref.set({name: me.displayName||'', email: me.email||'', role:'user', warnings:0, suspended:false, partner:false, createdAt: Date.now()});
+    }else{
+      if(curr.suspended){ toast('Your account is suspended for violations.'); }
+    }
+    isAdmin = (curr && curr.role==='admin');
+    if(isAdmin) ui.btnAdmin.classList.remove('hidden'); else ui.btnAdmin.classList.add('hidden');
+  }
+
+  // settings
+  const setSnap = await db.ref('admin/settings').once('value');
+  settings = Object.assign({banned:[],uploads:false,dupLimit:3}, setSnap.val()||{});
+
+  // welcome notice for guests
+  if(!me){ noticesEl.textContent='Login to upload, like, comment & share. Admin controls ads & policies.'; noticesEl.classList.remove('hidden'); }
+
   loadFeed();
-  startAdsListener();
+});
 
-  // handle ?v= query for open by id
-  (async ()=>{
-    const qp = new URLSearchParams(location.search);
-    const vid = qp.get('v') || qp.get('embed');
-    if (!vid) return;
-    try {
-      const vdoc = await getDoc(doc(db,'videos',vid));
-      if (vdoc.exists()) openPlayerForVideo(vid, vdoc.data());
-    } catch(e){ console.warn('open by id fail', e) }
-  })();
+/** ---------- Upload modal toggles from header ---------- */
+document.getElementById('btnUploadOpen').addEventListener('click', ()=>{
+  if(!me){ toast('Login required'); return; }
+  const uref = db.ref('users/'+me.uid);
+  uref.once('value').then(s=>{
+    const u = s.val()||{};
+    if(u.suspended){ toast('Account suspended. Upload blocked.'); return; }
+    openUpload();
+  });
+});
+document.getElementById('btnAdmin').addEventListener('click', ()=>{
+  if(!isAdmin) return toast('Admin only');
+});
 
-  // expose for debug
-  window.loadFeed = loadFeed;
-  </script>
+/** ---------- Simple Hash Router (share deep link) ---------- */
+window.addEventListener('hashchange', loadFeed);
+
+/** ---------- Admin Policy modal open/close already wired ---------- */
+
+/** ---------- Done ---------- */
+</script>
+
+<!-- Realtime Database RULES (copy into Console → Database → Rules):
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "admin": {
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'"
+    }
+  }
+}
+-->
+
 </body>
 </html>
