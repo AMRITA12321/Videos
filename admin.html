@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin Panel — Ads</title>
+  <style>
+    body{font-family:Inter,Arial,Helvetica,sans-serif;margin:0;padding:12px;background:#f7f7f7}
+    .card{background:#fff;border-radius:8px;padding:12px;box-shadow:0 1px 6px rgba(0,0,0,0.06);max-width:900px;margin:12px auto}
+    label{display:block;margin-top:8px;font-weight:600}
+    textarea,input{width:100%;padding:8px;border-radius:6px;border:1px solid #ddd}
+    .btn{background:#0b74de;color:#fff;border:none;padding:8px 10px;border-radius:6px;cursor:pointer}
+    .btn.secondary{background:#eee;color:#111}
+    .muted{color:#666;font-size:13px}
+    .danger{background:#d9534f;color:#fff}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Admin Panel — Ads</h2>
+    <div id="auth-area">
+      <button id="btn-login" class="btn">Login (Google)</button>
+      <span class="muted">Login with the account that has admin rights in Firestore users collection.</span>
+    </div>
+
+    <div id="admin-controls" class="hidden">
+      <div class="muted">Signed in as <span id="admin-email"></span> (<span id="admin-uid"></span>)</div>
+      <label>Enable Ads</label>
+      <select id="ads-enabled"><option value="true">Enabled</option><option value="false">Disabled</option></select>
+
+      <label>Position (where to show)</label>
+      <select id="ads-position">
+        <option value="site">Site-wide (top & sidebar)</option>
+        <option value="video">Video-level (pre-roll / mid-roll hook)</option>
+        <option value="site,video">Both</option>
+      </select>
+
+      <label>Ad HTML (site banners / AdSense snippet)</label>
+      <textarea id="ads-html" rows="6" placeholder="Paste AdSense / banner HTML here (admin-only)."></textarea>
+
+      <label>VAST Tag URL (for video ads)</label>
+      <input id="ads-vast" type="text" placeholder="https://adserver.example/vast_tag.xml" />
+
+      <label>Optional: targetVideoId (leave empty for all videos)</label>
+      <input id="ads-target-video" type="text" placeholder="video id (e.g., vid_123456)" />
+
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button id="btn-save" class="btn">Save Ads</button>
+        <button id="btn-clear" class="btn secondary">Clear</button>
+        <button id="btn-logout" class="btn danger">Logout</button>
+      </div>
+
+      <div id="save-status" class="muted" style="margin-top:8px"></div>
+    </div>
+
+    <div id="no-admin" class="muted hidden">You are signed in but not an admin user. Set user role to 'admin' in Firestore users/{uid} to manage ads.</div>
+  </div>
+
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-firestore.js";
+
+  // same firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBIwk_zUPiVrMtPGSh7AVTjO_zgUCt2dp8",
+    authDomain: "videos-37e8f.firebaseapp.com",
+    databaseURL: "https://videos-37e8f-default-rtdb.firebaseio.com",
+    projectId: "videos-37e8f",
+    storageBucket: "videos-37e8f.firebasestorage.app",
+    messagingSenderId: "518714664903",
+    appId: "1:518714664903:web:691c37e0e9978607cadbe2",
+    measurementId: "G-FDY9ZRJZFD"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const btnLogin = document.getElementById('btn-login');
+  const adminControls = document.getElementById('admin-controls');
+  const adminEmail = document.getElementById('admin-email');
+  const adminUid = document.getElementById('admin-uid');
+  const adsEnabled = document.getElementById('ads-enabled');
+  const adsHtml = document.getElementById('ads-html');
+  const adsVast = document.getElementById('ads-vast');
+  const adsPosition = document.getElementById('ads-position');
+  const adsTarget = document.getElementById('ads-target-video');
+  const btnSave = document.getElementById('btn-save');
+  const btnClear = document.getElementById('btn-clear');
+  const btnLogout = document.getElementById('btn-logout');
+  const saveStatus = document.getElementById('save-status');
+  const noAdmin = document.getElementById('no-admin');
+
+  btnLogin.addEventListener('click', async ()=>{
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+    } catch(e){ alert('Login failed: '+e.message) }
+  });
+
+  btnLogout.addEventListener('click', async ()=> { await signOut(auth); location.reload(); });
+
+  onAuthStateChanged(auth, async user=>{
+    if (!user) {
+      adminControls.classList.add('hidden'); noAdmin.classList.add('hidden');
+      return;
+    }
+    // check if user has role admin in users collection
+    const udoc = await getDoc(doc(db,'users',user.uid));
+    const role = udoc.exists() && udoc.data().role ? udoc.data().role : null;
+    if (role === 'admin') {
+      adminControls.classList.remove('hidden'); noAdmin.classList.add('hidden');
+      adminEmail.textContent = user.email || '(no email)'; adminUid.textContent = user.uid;
+      // load current ad config
+      loadAdsConfig();
+    } else {
+      adminControls.classList.add('hidden'); noAdmin.classList.remove('hidden');
+      adminEmail.textContent = user.email || '(no email)'; adminUid.textContent = user.uid;
+    }
+  });
+
+  async function loadAdsConfig(){
+    const docRef = doc(db,'admin','ads');
+    const snap = await getDoc(docRef);
+    if (!snap.exists()){
+      adsEnabled.value = 'false';
+      adsHtml.value = '';
+      adsVast.value = '';
+      adsPosition.value = 'site';
+      adsTarget.value = '';
+      saveStatus.textContent = 'No ad configured yet.';
+      return;
+    }
+    const data = snap.data();
+    adsEnabled.value = data.enabled ? 'true' : 'false';
+    adsHtml.value = data.html || '';
+    adsVast.value = data.vastTag || '';
+    adsPosition.value = data.position || 'site';
+    adsTarget.value = data.targetVideoId || '';
+    saveStatus.textContent = 'Loaded current ad config.';
+  }
+
+  btnSave.addEventListener('click', async ()=>{
+    // Write to admin/ads doc
+    const payload = {
+      enabled: adsEnabled.value === 'true',
+      html: adsHtml.value || '',
+      vastTag: adsVast.value || '',
+      position: adsPosition.value || 'site',
+      targetVideoId: adsTarget.value || '',
+      updatedAt: new Date().toISOString()
+    };
+    try {
+      await setDoc(doc(db,'admin','ads'), payload);
+      saveStatus.textContent = 'Saved ad config.';
+    } catch(e){ saveStatus.textContent = 'Save failed: '+e.message; }
+  });
+
+  btnClear.addEventListener('click', ()=>{
+    if (!confirm('Clear ad configuration?')) return;
+    adsEnabled.value='false'; adsHtml.value=''; adsVast.value=''; adsPosition.value='site'; adsTarget.value=''; saveStatus.textContent='Cleared (not saved).';
+  });
+
+  // Security note: In production, ensure Firestore rules allow only admin users to write to admin/ads.
+  </script>
+</body>
+</html>
