@@ -1,606 +1,490 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bn">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>ভিডিওশেয়ার — Single File App (Firebase Hosting Ready)</title>
-  <meta name="description" content="একটি আধুনিক ভিডিও শেয়ারিং প্ল্যাটফর্ম — Firebase Hosting Ready, Admin Control, Ads, Premium News সহ।" />
-  <meta name="theme-color" content="#0ea5e9" />
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ভিডিও প্ল্যাটফর্ম — Main</title>
   <style>
-    :root{
-      --bg:#0b1220;--card:#0f172a;--muted:#94a3b8;--text:#e2e8f0;--brand:#0ea5e9;--accent:#22c55e;--danger:#ef4444;--warning:#f59e0b;
-      --radius:16px;--shadow:0 10px 30px rgba(0,0,0,.25)
-    }
-    *{box-sizing:border-box}html,body{height:100%}body{
-      margin:0;background:linear-gradient(180deg,#0b1220,#0b1220 60%,#0a0f1c);color:var(--text);font:500 15px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial
-    }
-    a{color:inherit;text-decoration:none}
-    .container{max-width:1100px;margin:0 auto;padding:16px}
-    header.nav{position:sticky;top:0;z-index:1000;background:rgba(11,18,32,.8);backdrop-filter:saturate(140%) blur(12px);border-bottom:1px solid rgba(148,163,184,.12)}
-    .nav .row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 16px}
-    .brand{display:flex;gap:8px;align-items:center;font-weight:800}
-    .brand .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#38bdf8 60%,#a78bfa);box-shadow:var(--shadow)}
-    .nav .search{flex:1;max-width:520px;display:flex;border:1px solid rgba(148,163,184,.2);border-radius:999px;overflow:hidden}
-    .nav input[type=search]{flex:1;padding:10px 14px;background:#0a1326;color:var(--text);border:0;outline:0}
-    .nav .search button{padding:10px 14px;background:var(--brand);border:0;color:white;cursor:pointer}
-    .nav .links{display:flex;gap:10px;flex-wrap:wrap}
-    .btn{padding:9px 14px;border-radius:999px;border:1px solid rgba(148,163,184,.2);background:#0a1326;color:var(--text);cursor:pointer}
-    .btn.primary{background:var(--brand);border-color:transparent;color:white}
-    .btn.ghost{background:transparent}
-    .btn.danger{background:var(--danger);border-color:transparent}
-    .chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#0c1935;border:1px solid rgba(148,163,184,.18);color:#bfdbfe;font-size:12px}
-    main{padding:18px}
-    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
-    .col-12{grid-column:span 12}
-    .col-9{grid-column:span 9}.col-8{grid-column:span 8}.col-6{grid-column:span 6}
-    .col-4{grid-column:span 4}.col-3{grid-column:span 3}
-    @media(max-width:980px){.col-9,.col-8{grid-column:span 12}.col-6{grid-column:span 12}.col-4{grid-column:span 6}.col-3{grid-column:span 6}}
-    @media(max-width:600px){.col-4{grid-column:span 12}.col-3{grid-column:span 12}}
-    .card{background:var(--card);border:1px solid rgba(148,163,184,.12);border-radius:var(--radius);box-shadow:var(--shadow)}
-    .card.pad{padding:16px}
-    .thumb{position:relative;border-radius:14px;overflow:hidden;background:#071126;border:1px solid rgba(148,163,184,.12)}
-    .thumb img,.thumb iframe,.thumb video{width:100%;height:100%;display:block;object-fit:cover}
-    .thumb .badge{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.6);color:#fff;padding:4px 8px;border-radius:8px;font-weight:700;font-size:12px}
-    .v-item{display:flex;gap:12px}
-    .v-meta{display:flex;flex-direction:column;gap:6px}
-    .muted{color:var(--muted)}
-    .pill{display:inline-flex;align-items:center;border:1px solid rgba(148,163,184,.18);border-radius:999px;padding:4px 10px;font-size:12px;background:#0b1a31}
-    .stack{display:flex;gap:10px;flex-wrap:wrap}
-    .sep{height:1px;background:rgba(148,163,184,.12);margin:12px 0}
-    .ad{background:linear-gradient(135deg,#0c1935,#0b213f);border:1px dashed rgba(148,163,184,.35);border-radius:14px;padding:14px;text-align:center}
-    .table{width:100%;border-collapse:collapse;font-size:14px}
-    .table th,.table td{padding:10px;border-bottom:1px solid rgba(148,163,184,.12);text-align:left}
-    .notice{padding:12px;border:1px solid rgba(148,163,184,.2);border-radius:12px;background:#0b1a31}
-    .label{font-size:12px;color:var(--muted);margin-bottom:6px}
-    input[type=text],input[type=url],input[type=email],input[type=password],select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(148,163,184,.25);background:#0a1326;color:var(--text);outline:none}
-    textarea{min-height:110px;resize:vertical}
-    .player{aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid rgba(148,163,184,.15);background:#000}
-    .inline{display:inline-flex;gap:8px;align-items:center}
-    footer{padding:30px 16px;color:var(--muted);text-align:center}
-    .tag{font-size:12px;background:#08203c;border:1px solid rgba(148,163,184,.2);padding:4px 8px;border-radius:999px}
-    .hidden{display:none!important}
+    :root{--bg:#fafafa;--card:#fff;--accent:#0b74de;--muted:#666}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Arial,Helvetica,sans-serif;background:var(--bg);color:#111}
+    header{display:flex;align-items:center;justify-content:space-between;padding:12px;background:#111;color:#fff}
+    header .brand{font-weight:700}
+    nav a{color:#ddd;margin:0 8px;text-decoration:none}
+    .container{max-width:1100px;margin:18px auto;padding:0 12px}
+    .layout{display:grid;grid-template-columns:1fr 320px;gap:14px}
+    .card{background:var(--card);border-radius:10px;padding:10px;box-shadow:0 1px 6px rgba(0,0,0,0.06)}
+    .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+    .video-thumb img{width:100%;height:160px;object-fit:cover;border-radius:8px}
+    .video-meta{padding:8px}
+    .btn{background:var(--accent);color:#fff;border:none;padding:8px 10px;border-radius:6px;cursor:pointer}
+    .btn.secondary{background:#eee;color:#111}
+    .small{font-size:13px;color:var(--muted)}
+    #player-modal{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:60}
+    #player-wrap{position:relative;max-width:90vw;width:100%;max-height:90vh}
+    video{width:100%;height:auto;background:#000;border-radius:8px}
+    #player-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;pointer-events:none}
+    .hidden{display:none}
+    .ad-slot{background:#111;color:#fff;padding:8px;border-radius:6px;text-align:center}
+    label{display:block;margin-top:8px;font-weight:600}
+    input[type="text"], textarea{width:100%;padding:8px;border-radius:6px;border:1px solid #ddd}
+    footer{margin-top:18px;padding:10px;text-align:center;color:var(--muted)}
+    @media(max-width:900px){ .layout{grid-template-columns:1fr} }
   </style>
-
-  <!-- Firebase SDKs (compat for quick start) -->
-  <script defer src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
-  <script defer src="https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics-compat.js"></script>
 </head>
 <body>
-  <header class="nav">
-    <div class="row container">
-      <a class="brand" href="#/home" aria-label="ভিডিওশেয়ার হোম">
-        <span class="logo"></span><span>ভিডিওশেয়ার</span>
-        <span class="chip" id="roleChip">role: viewer</span>
-        <span class="chip" id="premiumChip">non-premium</span>
-      </a>
-      <form class="search" id="searchForm" role="search" aria-label="ভিডিও খুঁজুন">
-        <input id="q" type="search" placeholder="সার্চ: শিরোনাম, ট্যাগ, ক্যাটেগরি…" />
-        <button type="submit">খুঁজুন</button>
-      </form>
-      <nav class="links">
-        <a class="btn ghost" href="#/home">হোম</a>
-        <a class="btn ghost" href="#/upload">আপলোড</a>
-        <a class="btn ghost" href="#/premium">প্রিমিয়াম নিউজ</a>
-        <a class="btn ghost" href="#/profile">প্রোফাইল</a>
-        <a class="btn ghost" href="#/admin">অ্যাডমিন</a>
-        <button class="btn primary" id="authBtn">সাইন ইন</button>
-      </nav>
+  <header>
+    <div class="brand">ভিডিও প্ল্যাটফর্ম</div>
+    <nav>
+      <a href="#home" onclick="showTab('home')">Home</a>
+      <a href="#trending" onclick="showTab('trending')">Trending</a>
+      <a href="#links" onclick="showTab('links')">Uploaded Links</a>
+    </nav>
+    <div>
+      <button id="btn-login" class="btn secondary">Login</button>
+      <button id="btn-upload" class="btn">Upload</button>
     </div>
   </header>
 
   <main class="container">
-    <div id="view"></div>
-  </main>
+    <div class="layout">
+      <!-- Main feed -->
+      <section>
+        <div id="status" class="card small">Connecting...</div>
 
-  <footer>
-    © <span id="year"></span> ভিডিওশেয়ার • Firebase Hosting Ready • Infinix API hooks
-  </footer>
+        <div id="home-section" class="card">
+          <h3>Home</h3>
+          <!-- Site-wide ad injected by admin (position: top) -->
+          <div id="site-ad-top" class="ad-slot small" style="margin-bottom:10px">Ad slot (admin controlled)</div>
 
-<script>
-/* ============================================================
-   🔧 Quick Setup (Change These Before Deploy)
-=============================================================== */
-const firebaseConfig = {
-  apiKey: "AIzaSyBIwk_zUPiVrMtPGSh7AVTjO_zgUCt2dp8",
-  authDomain: "videos-37e8f.firebaseapp.com",
-  projectId: "videos-37e8f",
-  appId: "1:518714664903:web:691c37e0e9978607cadbe2",
-  measurementId: "G-FDY9ZRJZFD"
-};
-const API_BASE = ""; // backend থাকলে এখানে বসাও
-
-/* ============================================================
-   🧠 Simple State (Local Mock) — replace with real APIs later
-=============================================================== */
-const State = {
-  user: null,          // {uid, email, displayName, role, premium}
-  videos: [],          // array of {id,title,desc,src,type,tags,channel,approved,views,createdAt}
-  comments: {},        // {videoId: [{user,text,at}]}
-  adsEnabled: true,    // disable if premium
-};
-const ROLES = ["viewer", "creator", "moderator", "admin"];
-
-/* ============================================================
-   🚀 Bootstrap
-=============================================================== */
-document.getElementById('year').textContent = new Date().getFullYear();
-const App = {
-  init(){
-    try{
-      firebase.initializeApp(firebaseConfig);
-      if (firebase.analytics) firebase.analytics();
-    }catch(e){console.warn("Firebase init skipped (use your keys)", e)}
-    this.load();
-    this.route();
-    window.addEventListener('hashchange', ()=>this.route());
-    document.getElementById('searchForm').addEventListener('submit', onSearch);
-    document.getElementById('authBtn').addEventListener('click', toggleAuth);
-    updateChips();
-  },
-  load(){
-    const local = JSON.parse(localStorage.getItem('vs_data')||'{}');
-    State.videos = local.videos || seedVideos();
-    State.comments = local.comments || {};
-    State.user = local.user || null;
-    State.adsEnabled = !(State.user && State.user.premium);
-    persist();
-  },
-  route(){
-    const hash = location.hash || '#/home';
-    const [_, route, param] = hash.split('/');
-    const view = document.getElementById('view');
-    if(route==='watch'){return renderWatch(view, param)}
-    if(route==='upload'){return renderUpload(view)}
-    if(route==='profile'){return renderProfile(view)}
-    if(route==='admin'){return renderAdmin(view)}
-    if(route==='premium'){return renderPremium(view)}
-    return renderHome(view);
-  }
-};
-window.addEventListener('load', ()=>App.init());
-
-function persist(){
-  localStorage.setItem('vs_data', JSON.stringify({
-    user: State.user, videos: State.videos, comments: State.comments
-  }));
-}
-
-/* ============================================================
-   🔍 Search
-=============================================================== */
-function onSearch(e){
-  e.preventDefault();
-  const q = document.getElementById('q').value.trim().toLowerCase();
-  const results = State.videos.filter(v =>
-    (v.title||'').toLowerCase().includes(q) ||
-    (v.tags||[]).join(',').toLowerCase().includes(q)
-  );
-  renderHome(document.getElementById('view'), results, q);
-}
-
-/* ============================================================
-   👤 Auth (Mock) + Role/Premium Toggle
-=============================================================== */
-function toggleAuth(){
-  if(State.user){
-    State.user=null;
-    State.adsEnabled=true;
-    persist(); updateChips();
-    App.route(); return;
-  }
-  const name=prompt("নাম লিখুন (ডেমো):","Amrita");
-  const role=prompt("রোল (viewer/creator/moderator/admin):","creator");
-  const premium=confirm("Premium সক্রিয় করবেন? OK=Yes");
-  State.user={uid:"local-"+Date.now(),displayName:name||"Guest",email:"guest@example.com",role:ROLES.includes(role)?role:"viewer",premium};
-  State.adsEnabled=!premium;
-  persist(); updateChips(); App.route();
-}
-function requireRole(roles){
-  if(!State.user || !roles.includes(State.user.role)){
-    alert("অ্যাক্সেস ডিনাইড। প্রয়োজনীয় রোল: "+roles.join(', '));
-    location.hash="#/home"; return false;
-  }
-  return true;
-}
-function updateChips(){
-  const roleChip=document.getElementById('roleChip');
-  const premiumChip=document.getElementById('premiumChip');
-  roleChip.textContent="role: "+(State.user? State.user.role : "viewer");
-  premiumChip.textContent= (State.user&&State.user.premium) ? "premium" : "non-premium";
-  document.getElementById('authBtn').textContent = State.user? "সাইন আউট" : "সাইন ইন";
-}
-
-/* ============================================================
-   🏠 Home
-=============================================================== */
-function renderHome(el, list=null, q=null){
-  const items = (list || State.videos).filter(v=>v.approved);
-  const header = `
-    <div class="stack">
-      <span class="pill">ট্রেন্ডিং</span>
-      <span class="pill">নতুন</span>
-      <span class="pill">আপনার জন্য</span>
-      ${q? `<span class="pill">সার্চ: “${escapeHTML(q)}”</span>`:''}
-    </div>
-    <div class="sep"></div>
-  `;
-  const grid = items.map(v=>videoCard(v)).join('');
-  const adBlock = (!State.user||!State.user.premium) ? `<div class="ad">Ad Slot • CPM • CTR</div>` : '';
-  el.innerHTML = `
-    ${adBlock}
-    <div class="grid">
-      ${grid || `<div class="col-12"><div class="notice">কোন ভিডিও নেই। আপলোড করে শুরু করুন।</div></div>`}
-    </div>
-  `;
-  el.insertAdjacentHTML('afterbegin', header);
-}
-function videoCard(v){
-  return `
-  <div class="col-4">
-    <div class="card pad">
-      <a class="thumb" href="#/watch/${v.id}" aria-label="${escapeHTML(v.title)}">
-        ${thumbEmbed(v)}
-        <span class="badge">▶ ${nfmt(v.views)}</span>
-      </a>
-      <div class="v-item" style="margin-top:10px">
-        <div style="width:46px;height:46px;border-radius:50%;background:#0a1326;border:1px solid rgba(148,163,184,.2)"></div>
-        <div class="v-meta">
-          <a class="inline" href="#/watch/${v.id}" style="font-weight:700">${escapeHTML(v.title)}</a>
-          <div class="muted">${escapeHTML(v.channel)} • ${timeago(v.createdAt)}</div>
-          <div class="stack">${(v.tags||[]).slice(0,3).map(t=>`<span class="tag">#${escapeHTML(t)}</span>`).join('')}</div>
+          <div id="feed" class="feed"></div>
         </div>
-      </div>
-    </div>
-  </div>`;
-}
-function thumbEmbed(v){
-  if(v.type==='youtube'){
-    const id = ytId(v.src);
-    return `<img alt="" src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" loading="lazy">`;
-  }
-  if(v.type==='vimeo'){
-    return `<img alt="" src="https://vumbnail.com/${v.vimeoId||'000'}.jpg" loading="lazy">`;
-  }
-  return `<img alt="" src="https://picsum.photos/seed/${encodeURIComponent(v.id)}/800/450" loading="lazy">`;
-}
 
-/* ============================================================
-   🎥 Watch Page
-=============================================================== */
-function renderWatch(el, id){
-  const v = State.videos.find(x=>x.id===id);
-  if(!v){el.innerHTML=`<div class="notice">ভিডিও পাওয়া যায়নি।</div>`;return}
-  v.views++; persist();
-
-  el.innerHTML = `
-    <div class="grid">
-      <div class="col-9">
-        <div class="player">${playerEmbed(v)}</div>
-        <div class="stack" style="margin-top:12px">
-          <h2 style="margin:0">${escapeHTML(v.title)}</h2>
-          ${(!State.user||!State.user.premium) ? `<span class="chip">Ad • mid-roll</span>`:''}
-        </div>
-        <div class="muted">${escapeHTML(v.channel)} • ${nfmt(v.views)} ভিউ • ${timeago(v.createdAt)}</div>
-        <div class="sep"></div>
-        <p>${escapeHTML(v.desc||'')}</p>
-        <div class="stack">${(v.tags||[]).map(t=>`<span class="tag">#${escapeHTML(t)}</span>`).join('')}</div>
-        <div class="sep"></div>
-        <div>
-          <div class="label">কমেন্ট</div>
-          <form id="cform" class="stack">
-            <input type="text" id="ctext" placeholder="আপনার মন্তব্য…" />
-            <button class="btn primary" type="submit">পোস্ট</button>
-          </form>
-          <div id="clist" style="margin-top:10px"></div>
-        </div>
-      </div>
-      <div class="col-3">
-        ${(!State.user||!State.user.premium) ? `<div class="ad">Sidebar Ad</div>`:''}
-        <div class="sep"></div>
-        <div class="card pad"><div class="label">রিলেটেড</div>${related(v.id)}</div>
-      </div>
-    </div>
-  `;
-  const cf=document.getElementById('cform');
-  cf.addEventListener('submit',e=>{
-    e.preventDefault();
-    if(!State.user){alert("কমেন্ট করতে সাইন-ইন করুন");return}
-    const t=document.getElementById('ctext').value.trim();
-    if(!t) return;
-    (State.comments[v.id] = State.comments[v.id] || []).push({user: State.user.displayName, text:t, at: Date.now()});
-    persist();
-    document.getElementById('ctext').value='';
-    renderComments(v.id);
-  });
-  renderComments(v.id);
-}
-function playerEmbed(v){
-  if(v.type==='youtube'){return `<iframe src="https://www.youtube.com/embed/${ytId(v.src)}" title="YouTube video" frameborder="0" allowfullscreen></iframe>`}
-  if(v.type==='vimeo'){return `<iframe src="https://player.vimeo.com/video/${v.vimeoId||'76979871'}" title="Vimeo video" frameborder="0" allowfullscreen></iframe>`}
-  if(/\.(mp4|webm|m3u8)$/i.test(v.src)){
-    return `<video src="${escapeAttr(v.src)}" controls playsinline></video>`;
-  }
-  return `<div class="notice">সাপোর্টেড নয় এমন সোর্স।</div>`;
-}
-function related(exceptId){
-  return State.videos.filter(v=>v.approved && v.id!==exceptId).slice(0,6).map(v=>`
-    <div style="display:flex;gap:10px;margin:8px 0">
-      <a class="thumb" style="width:120px;height:70px" href="#/watch/${v.id}">${thumbEmbed(v)}</a>
-      <div style="flex:1">
-        <a href="#/watch/${v.id}" style="font-weight:700">${escapeHTML(v.title)}</a>
-        <div class="muted">${escapeHTML(v.channel)}</div>
-      </div>
-    </div>
-  `).join('');
-}
-function renderComments(id){
-  const wrap=document.getElementById('clist');
-  const list=(State.comments[id]||[]).slice().reverse();
-  wrap.innerHTML=list.map(c=>`
-    <div class="card pad" style="margin:8px 0">
-      <div class="inline"><strong>${escapeHTML(c.user)}</strong><span class="muted">${timeago(c.at)}</span></div>
-      <div>${escapeHTML(c.text)}</div>
-    </div>
-  `).join('') || `<div class="muted">প্রথম কমেন্টটি করুন…</div>`;
-}
-
-/* ============================================================
-   ⬆️ Upload (File/Link)
-=============================================================== */
-function renderUpload(el){
-  if(!State.user){el.innerHTML=`<div class="notice">আপলোড করতে সাইন-ইন করুন।</div>`;return}
-  if(!requireRole(["creator","moderator","admin"])) return;
-
-  el.innerHTML=`
-    <div class="grid">
-      <div class="col-8">
-        <div class="card pad">
-          <h2 style="margin-top:0">ভিডিও আপলোড</h2>
-          <div class="sep"></div>
-          <form id="uform" class="grid">
-            <div class="col-6">
-              <div class="label">শিরোনাম</div>
-              <input type="text" name="title" required placeholder="ভিডিও শিরোনাম">
+        <div id="links-section" class="card hidden" style="margin-top:12px">
+          <h3>Uploaded Links</h3>
+          <div id="links-list"></div>
+          <hr/>
+          <div>
+            <label>Paste external video link</label>
+            <input id="external-url" type="text" placeholder="https://..." />
+            <div style="margin-top:8px">
+              <button id="btn-add-link" class="btn">Add Link</button>
+              <button id="btn-fetch-meta" class="btn secondary">Fetch Metadata</button>
             </div>
-            <div class="col-6">
-              <div class="label">ক্যাটেগরি</div>
-              <input type="text" name="category" placeholder="যেমন: Tech">
-            </div>
-            <div class="col-12">
-              <div class="label">বর্ণনা</div>
-              <textarea name="desc" placeholder="ভিডিও বর্ণনা"></textarea>
-            </div>
-            <div class="col-12">
-              <div class="label">ভিডিও লিংক (YouTube/Vimeo/MP4/M3U8)</div>
-              <input type="url" name="src" required placeholder="https://youtu.be/xyz বা https://cdn.com/video.mp4">
-            </div>
-            <div class="col-12">
-              <div class="label">ট্যাগ (কমা দিয়ে আলাদা)</div>
-              <input type="text" name="tags" placeholder="news,tech,funny">
-            </div>
-            <div class="col-12">
-              <button class="btn primary" type="submit">সাবমিট (রিভিউতে যাবে)</button>
-            </div>
-          </form>
-        </div>
-      </div>
-      <div class="col-4">
-        <div class="card pad">
-          <div class="label">গাইড</div>
-          <ul style="margin:0 0 0 16px">
-            <li>কপিরাইটেড কনটেন্ট আপলোড করবেন না</li>
-            <li>হিংসা/বিদ্বেষ/ভুল তথ্য — নিষিদ্ধ</li>
-            <li>YouTube/Vimeo দিলে থাম্ব অটো ফেচ হবে</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  `;
-  document.getElementById('uform').addEventListener('submit', e=>{
-    e.preventDefault();
-    const fd=new FormData(e.target);
-    const title=fd.get('title').trim();
-    const src=fd.get('src').trim();
-    const desc=fd.get('desc').trim();
-    const tags=(fd.get('tags')||'').split(',').map(s=>s.trim()).filter(Boolean);
-    const v = buildVideoFromSource({title, src, desc, tags, channel: State.user.displayName || "Creator"});
-    State.videos.push(v); persist();
-    alert("সাবমিটেড! অ্যাডমিন অনুমোদনের পর লাইভ হবে।");
-    location.hash=`#/watch/${v.id}`;
-  });
-}
-function buildVideoFromSource({title,src,desc,tags,channel}){
-  let type="file", yt=null, vimeo=null;
-  if(/youtu\.?be/.test(src)){
-    type="youtube"; yt=ytId(src);
-  }else if(/vimeo/.test(src)){
-    type="vimeo"; vimeo = (src.split("/").pop()||"").split("?")[0];
-  }else if(/\.(mp4|webm|m3u8)$/i.test(src)){
-    type="file";
-  }
-  return {
-    id: "v"+Date.now(),
-    title: title || "Untitled",
-    desc: desc || "",
-    src,
-    type,
-    vimeoId: vimeo,
-    tags,
-    channel,
-    approved:false,
-    views:0,
-    createdAt: Date.now()
-  };
-}
-
-/* ============================================================
-   👨‍✈️ Admin
-=============================================================== */
-function renderAdmin(el){
-  if(!requireRole(["admin","moderator"])) return;
-  const pending = State.videos.filter(v=>!v.approved);
-  const all = State.videos.slice().reverse();
-  el.innerHTML = `
-    <div class="grid">
-      <div class="col-8">
-        <div class="card pad">
-          <h2 style="margin:0">রিভিউ কিউ</h2>
-          <div class="sep"></div>
-          ${pending.map(v=>`
-            <div class="v-item" style="justify-content:space-between">
-              <div class="inline" style="gap:12px">
-                <div class="thumb" style="width:120px;height:70px">${thumbEmbed(v)}</div>
-                <div>
-                  <div style="font-weight:700">${escapeHTML(v.title)}</div>
-                  <div class="muted">${escapeHTML(v.channel)} • ${timeago(v.createdAt)}</div>
-                </div>
-              </div>
-              <div class="inline">
-                <button class="btn" onclick="approveVideo('${v.id}',true)">Approve</button>
-                <button class="btn danger" onclick="deleteVideo('${v.id}')">Delete</button>
-              </div>
-            </div>
-            <div class="sep"></div>
-          `).join('') || `<div class="notice">কোন পেন্ডিং নেই।</div>`}
-        </div>
-      </div>
-      <div class="col-4">
-        <div class="card pad">
-          <h3 style="margin:0 0 10px 0">সব ভিডিও</h3>
-          <div style="max-height:460px;overflow:auto">
-            <table class="table">
-              <thead><tr><th>শিরোনাম</th><th>ভিউ</th><th>স্ট্যাটাস</th></tr></thead>
-              <tbody>
-                ${all.map(v=>`<tr>
-                  <td><a href="#/watch/${v.id}">${escapeHTML(v.title)}</a></td>
-                  <td>${nfmt(v.views)}</td>
-                  <td>${v.approved? 'Live':'Pending'}</td>
-                </tr>`).join('')}
-              </tbody>
-            </table>
+            <div id="link-meta" class="small" style="margin-top:8px"></div>
           </div>
         </div>
+
+        <footer>© Video Platform — Demo</footer>
+      </section>
+
+      <!-- Sidebar -->
+      <aside>
+        <div class="card">
+          <h4>Profile</h4>
+          <div id="profile-area"><div class="small">Not logged in</div></div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h4>Upload Video</h4>
+          <label>Title</label>
+          <input id="upload-title" type="text" placeholder="Video title" />
+          <label>Description</label>
+          <textarea id="upload-desc" rows="3"></textarea>
+          <label>File</label>
+          <input id="upload-file" type="file" accept="video/*" />
+          <div style="margin-top:8px">
+            <button id="btn-start-upload" class="btn">Upload</button>
+          </div>
+          <div id="upload-progress" class="small" style="margin-top:8px"></div>
+        </div>
+
+        <div class="card" style="margin-top:12px">
+          <h4>Admin Ad Preview</h4>
+          <div id="site-ad-side" class="ad-slot small">Ad slot (admin)</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Player Modal -->
+  <div id="player-modal" aria-hidden="true">
+    <div id="player-wrap" class="card">
+      <video id="player" playsinline webkit-playsinline controlslist="nodownload"></video>
+      <div id="player-overlay">Click to show controls</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="btn-like" class="btn">Like</button>
+        <button id="btn-comment" class="btn secondary">Comment</button>
+        <button id="btn-share" class="btn secondary">Share</button>
+      </div>
+      <!-- video-level ad placeholder -->
+      <div id="video-ad-slot" class="ad-slot small" style="margin-top:8px">Video ad (admin-controlled)</div>
+      <div style="position:absolute;left:10px;top:10px"><button id="close-player" class="btn secondary">Close</button></div>
+    </div>
+  </div>
+
+  <!-- templates -->
+  <template id="video-card-tpl">
+    <div class="card">
+      <div class="video-thumb"><img class="thumb" src="" alt="thumb"/></div>
+      <div class="video-meta">
+        <div class="title strong"></div>
+        <div class="small meta-line"></div>
       </div>
     </div>
-  `;
-}
-function approveVideo(id,flag){
-  const v=State.videos.find(x=>x.id===id); if(!v) return;
-  v.approved=!!flag; persist(); App.route();
-}
-function deleteVideo(id){
-  if(!confirm("ডিলিট করতে চান?")) return;
-  State.videos = State.videos.filter(v=>v.id!==id);
-  delete State.comments[id];
-  persist(); App.route();
-}
+  </template>
 
-/* ============================================================
-   👤 Profile
-=============================================================== */
-function renderProfile(el){
-  if(!State.user){el.innerHTML=`<div class="notice">প্রোফাইল দেখতে সাইন-ইন করুন।</div>`;return}
-  el.innerHTML = `
-    <div class="card pad">
-      <h2 style="margin:0 0 10px 0">প্রোফাইল</h2>
-      <div class="grid">
-        <div class="col-6">
-          <div class="label">নাম</div>
-          <input value="${escapeAttr(State.user.displayName||'')}" id="pname">
-        </div>
-        <div class="col-6">
-          <div class="label">রোল</div>
-          <select id="prole">
-            ${ROLES.map(r=>`<option value="${r}" ${State.user.role===r?'selected':''}>${r}</option>`).join('')}
-          </select>
-        </div>
-        <div class="col-12">
-          <label class="inline"><input type="checkbox" id="ppremium" ${State.user.premium?'checked':''} style="accent-color:#0ea5e9"> Premium</label>
-        </div>
-        <div class="col-12">
-          <button class="btn primary" onclick="saveProfile()">সেভ</button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-function saveProfile(){
-  State.user.displayName = document.getElementById('pname').value.trim()||State.user.displayName;
-  State.user.role = document.getElementById('prole').value;
-  State.user.premium = document.getElementById('ppremium').checked;
-  State.adsEnabled = !State.user.premium;
-  persist(); updateChips(); alert("আপডেট হয়েছে!"); App.route();
-}
+  <!-- Firebase & App Logic -->
+  <script type="module">
+  // ---------- FIREBASE CONFIG (you provided) ----------
+  const firebaseConfig = {
+    apiKey: "AIzaSyBIwk_zUPiVrMtPGSh7AVTjO_zgUCt2dp8",
+    authDomain: "videos-37e8f.firebaseapp.com",
+    databaseURL: "https://videos-37e8f-default-rtdb.firebaseio.com",
+    projectId: "videos-37e8f",
+    storageBucket: "videos-37e8f.firebasestorage.app",
+    messagingSenderId: "518714664903",
+    appId: "1:518714664903:web:691c37e0e9978607cadbe2",
+    measurementId: "G-FDY9ZRJZFD"
+  };
 
-/* ============================================================
-   ⭐ Premium (demo)
-=============================================================== */
-function renderPremium(el){
-  const news=[
-    {t:"প্রিমিয়াম নিউজ ১", d:"এটা শুধুই ডেমো কন্টেন্ট।"},
-    {t:"প্রিমিয়াম নিউজ ২", d:"সাবস্ক্রাইবারদের জন্য বিশেষ গল্প।"}
-  ];
-  if(!State.user || !State.user.premium){
-    el.innerHTML=`<div class="notice">প্রিমিয়াম কন্টেন্ট দেখতে Premium নিন (Profile থেকে On করুন)।</div>`;
-    return;
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-auth.js";
+  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, query, where, orderBy, onSnapshot, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-firestore.js";
+  import { getStorage, ref as sref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.20.0/firebase-storage.js";
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  // DOM elements
+  const statusEl = document.getElementById('status');
+  const feedEl = document.getElementById('feed');
+  const tpl = document.getElementById('video-card-tpl');
+  const profileArea = document.getElementById('profile-area');
+  const btnLogin = document.getElementById('btn-login');
+  const btnStartUpload = document.getElementById('btn-start-upload');
+  const uploadFile = document.getElementById('upload-file');
+  const uploadTitle = document.getElementById('upload-title');
+  const uploadDesc = document.getElementById('upload-desc');
+  const uploadProgress = document.getElementById('upload-progress');
+  const playerModal = document.getElementById('player-modal');
+  const player = document.getElementById('player');
+  const playerOverlay = document.getElementById('player-overlay');
+  const closePlayer = document.getElementById('close-player');
+  const siteAdTop = document.getElementById('site-ad-top');
+  const siteAdSide = document.getElementById('site-ad-side');
+  const videoAdSlot = document.getElementById('video-ad-slot');
+
+  let currentUser = null;
+  let currentPlayingId = null;
+  let adsDocUnsub = null; // to hold real-time listener
+
+  // show/hide tabs
+  function showTab(name){
+    document.getElementById('home-section').classList.toggle('hidden', name!=='home');
+    document.getElementById('links-section').classList.toggle('hidden', name!=='links');
+    document.getElementById('trending-section')?.classList.toggle('hidden', name!=='trending');
   }
-  el.innerHTML = `
-    <div class="grid">
-      ${news.map(n=>`<div class="col-6"><div class="card pad"><h3 style="margin:0">${escapeHTML(n.t)}</h3><p>${escapeHTML(n.d)}</p></div></div>`).join('')}
-    </div>
-  `;
-}
 
-/* ============================================================
-   🧰 Utils
-=============================================================== */
-function ytId(url){
-  try{
-    const m = url.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{6,})/);
-    return m? m[1] : "";
-  }catch{ return "" }
-}
-function timeago(ts){
-  const s = Math.floor((Date.now()-ts)/1000);
-  const units=[['বছর',31536000],['মাস',2592000],['দিন',86400],['ঘণ্টা',3600],['মিনিট',60],['সেকেন্ড',1]];
-  for(const [u,v] of units){ if(s>=v) return `${Math.floor(s/v)} ${u} আগে`; }
-  return "এইমাত্র";
-}
-function nfmt(n){ return new Intl.NumberFormat('bn-BD').format(n||0); }
-function escapeHTML(str){ return (str||'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function escapeAttr(str){ return escapeHTML(str).replace(/"/g,'&quot;'); }
-function seedVideos(){
-  const now=Date.now();
-  return [
-    {
-      id:"vseed1",
-      title:"Firebase Hosting দিয়ে সাইট লাইভ",
-      desc:"টার্মাক্সে ফায়ারবেস ডিপ্লয় ডেমো।",
-      src:"https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      type:"youtube",
-      tags:["firebase","hosting","deploy"],
-      channel:"Dev BD",
-      approved:true,
-      views:3250,
-      createdAt: now-86400*1000
-    },
-    {
-      id:"vseed2",
-      title:"Funny Cats Compilation",
-      desc:"শুধু হাসির জন্য 😸",
-      src:"https://cdn.example.com/cats.mp4",
-      type:"file",
-      tags:["funny","cats"],
-      channel:"Cats TV",
-      approved:true,
-      views:12900,
-      createdAt: now-3600*1000
+  // ---------- Auth handlers ----------
+  btnLogin.addEventListener('click', async ()=>{
+    if (currentUser){ await signOut(auth); return; }
+    const useGoogle = confirm('Sign in with Google? Cancel for Email flow.');
+    if (useGoogle){
+      try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+      catch(e){ alert('Google sign-in failed: '+e.message); }
+    } else {
+      const email = prompt('Email:'); if(!email) return;
+      const pw = prompt('Password: (6+ chars)'); if(!pw) return;
+      try {
+        await signInWithEmailAndPassword(auth, email, pw);
+      } catch(err){
+        // try signup
+        try { await createUserWithEmailAndPassword(auth, email, pw); alert('Account created and signed in'); }
+        catch(e2){ alert('Auth error: '+e2.message); }
+      }
     }
-  ];
-}
-</script>
+  });
+
+  onAuthStateChanged(auth, async user=>{
+    currentUser = user;
+    if (user){
+      btnLogin.textContent = 'Logout';
+      await ensureUserDoc(user);
+      renderProfile(user);
+    } else {
+      btnLogin.textContent = 'Login';
+      profileArea.innerHTML = '<div class="small">Not logged in</div>';
+    }
+  });
+
+  async function ensureUserDoc(user){
+    const uRef = doc(db,'users',user.uid);
+    const uSnap = await getDoc(uRef);
+    if (!uSnap.exists()){
+      await setDoc(uRef, { displayName: user.displayName||'', email: user.email||'', role:'user', createdAt: serverTimestamp() });
+    }
+  }
+
+  async function renderProfile(user){
+    const uSnap = await getDoc(doc(db,'users',user.uid));
+    const data = uSnap.exists()? uSnap.data() : {};
+    profileArea.innerHTML = `<div><strong>${data.displayName || user.email || 'User'}</strong></div><div class="small">${user.email||''}</div><div style="margin-top:8px" class="small">UID: ${user.uid}</div>`;
+  }
+
+  // ---------- Load feed from Firestore ----------
+  async function loadFeed(){
+    statusEl.textContent = 'Loading videos...';
+    try {
+      const q = query(collection(db,'videos'), where('visibility','==','public'), orderBy('createdAt','desc'));
+      const snaps = await getDocs(q);
+      feedEl.innerHTML = '';
+      snaps.forEach(snap=>{
+        const v = snap.data();
+        feedEl.appendChild(makeVideoCard(snap.id, v));
+      });
+      statusEl.textContent = 'Videos loaded';
+    } catch(e){
+      statusEl.textContent = 'Failed to load videos: '+e.message;
+      // show placeholders
+      feedEl.innerHTML = '';
+      for (let i=1;i<=6;i++){
+        const card = document.createElement('div'); card.className='card';
+        card.innerHTML = `<div class="video-thumb"><img src="https://picsum.photos/seed/${i}/480/270" /></div><div class="video-meta"><div class="title">Placeholder ${i}</div></div>`;
+        feedEl.appendChild(card);
+      }
+    }
+  }
+
+  function makeVideoCard(id, v){
+    const node = tpl.content.cloneNode(true);
+    const el = node.querySelector('.card');
+    const img = el.querySelector('.thumb');
+    const title = el.querySelector('.title');
+    const meta = el.querySelector('.meta-line');
+    img.src = v.thumbnail || `https://picsum.photos/seed/${id}/480/270`;
+    title.textContent = v.title || 'Untitled';
+    meta.textContent = `${v.views||0} views • ${v.likes||0} likes`;
+    img.addEventListener('click', ()=> openPlayerForVideo(id, v));
+    return el;
+  }
+
+  // ---------- Player & Video play ----------
+  async function openPlayerForVideo(id, v){
+    currentPlayingId = id;
+    try {
+      let src = null;
+      if (v.type === 'external' && v.externalLink) src = v.externalLink;
+      else if (v.storagePath) {
+        src = await getDownloadURL(sref(storage, v.storagePath));
+      } else { alert('No source'); return; }
+      openPlayer(src, id, v);
+    } catch(e){ alert('Play error: '+e.message); }
+  }
+
+  function openPlayer(src, id, v){
+    player.src = src;
+    player.currentTime = 0;
+    playerModal.style.display = 'flex';
+    playerOverlay.style.display = 'flex';
+    player.controls = false;
+    // increment view
+    updateDoc(doc(db,'videos',id), { views: increment(1) }).catch(()=>{});
+    // if admin set video-level ad for this video, show it (handled by ads listener)
+  }
+
+  player.addEventListener('click', function onClickOnce(){
+    player.controls = true;
+    playerOverlay.style.display = 'none';
+    player.removeEventListener('click', onClickOnce);
+  });
+
+  closePlayer.addEventListener('click', ()=> {
+    player.pause(); player.src=''; playerModal.style.display='none';
+    currentPlayingId = null;
+  });
+
+  // like/comment/share simple flows
+  document.getElementById('btn-like').addEventListener('click', async ()=>{
+    if (!currentUser) return alert('Login to like');
+    if (!currentPlayingId) return;
+    try { await updateDoc(doc(db,'videos',currentPlayingId), { likes: increment(1) }); alert('Liked'); }
+    catch(e){ alert('Like failed: '+e.message); }
+  });
+
+  document.getElementById('btn-comment').addEventListener('click', async ()=>{
+    if (!currentUser) return alert('Login to comment');
+    if (!currentPlayingId) return;
+    const text = prompt('Your comment:'); if (!text) return;
+    try { await addDoc(collection(db,'comments'), { videoId: currentPlayingId, authorId: currentUser.uid, text, createdAt: serverTimestamp() });
+      await updateDoc(doc(db,'videos',currentPlayingId), { commentsCount: increment(1) }); alert('Comment posted'); }
+    catch(e){ alert('Comment failed: '+e.message); }
+  });
+
+  document.getElementById('btn-share').addEventListener('click', ()=>{
+    if (!currentPlayingId) return;
+    const link = location.origin + location.pathname + '?v=' + currentPlayingId;
+    navigator.clipboard?.writeText(link).then(()=> alert('Link copied to clipboard'));
+  });
+
+  // ---------- Upload flow ----------
+  btnStartUpload.addEventListener('click', async ()=>{
+    if (!currentUser) return alert('Login to upload');
+    const file = uploadFile.files[0];
+    const title = uploadTitle.value.trim();
+    const desc = uploadDesc.value.trim();
+    if (!file || !title) return alert('File and title required');
+    try {
+      uploadProgress.textContent = 'Starting...';
+      const vidId = 'vid_' + Date.now();
+      const path = `videos/${currentUser.uid}/${vidId}/${file.name}`;
+      const ref = sref(storage, path);
+      const task = uploadBytesResumable(ref, file);
+      task.on('state_changed', snap=>{
+        const pct = Math.round((snap.bytesTransferred/snap.totalBytes)*100);
+        uploadProgress.textContent = `Uploading ${pct}%`;
+      }, err => { uploadProgress.textContent = 'Upload error: '+err.message }, async ()=>{
+        const url = await getDownloadURL(task.snapshot.ref);
+        // create video doc
+        const videoDoc = {
+          ownerId: currentUser.uid,
+          title,
+          description: desc,
+          storagePath: path,
+          thumbnail: null,
+          type: 'upload',
+          createdAt: serverTimestamp(),
+          visibility: 'public',
+          views: 0,
+          likes: 0,
+          commentsCount: 0,
+          adsEnabled: false,
+          adConfig: {}
+        };
+        await setDoc(doc(db,'videos',vidId), videoDoc);
+        uploadProgress.textContent = 'Upload complete';
+        uploadTitle.value=''; uploadDesc.value=''; uploadFile.value='';
+        await loadFeed();
+      });
+    } catch(e){ uploadProgress.textContent = 'Upload failed: '+e.message; }
+  });
+
+  // ---------- External link handling ----------
+  document.getElementById('btn-add-link').addEventListener('click', async ()=>{
+    if (!currentUser) return alert('Login to add link');
+    const url = document.getElementById('external-url').value.trim(); if (!url) return alert('Enter URL');
+    const title = prompt('Title for the link:') || 'External video';
+    const vidId = 'vid_' + Date.now();
+    await setDoc(doc(db,'videos',vidId), {
+      ownerId: currentUser.uid,
+      title,
+      description: '',
+      storagePath: '',
+      externalLink: url,
+      thumbnail: null,
+      type: 'external',
+      createdAt: serverTimestamp(),
+      visibility: 'public',
+      views: 0,
+      likes: 0,
+      commentsCount: 0,
+      adsEnabled: false,
+      adConfig: {}
+    });
+    alert('Link added'); document.getElementById('external-url').value='';
+    loadFeed();
+  });
+
+  document.getElementById('btn-fetch-meta').addEventListener('click', async ()=>{
+    const url = document.getElementById('external-url').value.trim(); if (!url) return alert('Enter URL');
+    // Fetching OG tags client-side often fails due to CORS — instruct user
+    try {
+      const res = await fetch(url, { mode: 'cors' });
+      const html = await res.text();
+      const titleMatch = html.match(/<meta\\s+property=["']og:title["']\\s+content=["']([^"']+)["']/i) || html.match(/<title>([^<]+)<\\/i);
+      const imgMatch = html.match(/<meta\\s+property=["']og:image["']\\s+content=["']([^"']+)["']/i);
+      const t = titleMatch ? titleMatch[1] : '(no title)';
+      const im = imgMatch ? imgMatch[1] : null;
+      document.getElementById('link-meta').textContent = `Title: ${t}${im ? ' (thumbnail found)' : ''}`;
+    } catch(e){
+      document.getElementById('link-meta').textContent = 'Metadata fetch blocked by CORS. Use server-side metadata or paste manually.';
+    }
+  });
+
+  // ---------- Admin-controlled ads: real-time listener ----------
+  // admin sets doc at collection 'admin' doc 'ads'
+  function startAdsListener(){
+    const adsRef = doc(db,'admin','ads');
+    if (adsDocUnsub) adsDocUnsub();
+    // real-time listener
+    adsDocUnsub = onSnapshot(adsRef, (snap)=>{
+      if (!snap.exists()) {
+        siteAdTop.innerHTML = 'Ad slot (admin controlled)';
+        siteAdSide.innerHTML = 'Ad slot (admin controlled)';
+        videoAdSlot.innerHTML = 'Video ad (admin-controlled)';
+        return;
+      }
+      const data = snap.data();
+      // Site-wide HTML injection
+      if (data.enabled && data.html && data.position && data.position.includes('site')) {
+        // CAUTION: we inject admin HTML as-is. Only admins should have write access.
+        siteAdTop.innerHTML = data.html;
+        siteAdSide.innerHTML = data.html;
+      } else {
+        siteAdTop.innerHTML = 'Ad slot (admin controlled)';
+        siteAdSide.innerHTML = 'Ad slot (admin controlled)';
+      }
+      // Video-level ad: if vastTag present & enabled, show notice and store for when video plays
+      if (data.enabled && data.vastTag && data.position && data.position.includes('video')) {
+        // store in global variable to be used when video plays
+        window.ADMIN_VIDEO_AD = data.vastTag;
+        videoAdSlot.innerHTML = 'Video ad configured (will play on video start)';
+      } else {
+        window.ADMIN_VIDEO_AD = null;
+        if (!data.html) videoAdSlot.innerHTML = 'Video ad (admin-controlled)';
+      }
+    }, err => { console.warn('ads listener error', err); });
+  }
+
+  // Show ads for playing video (simulated for VAST)
+  async function showAdminVideoAdIfAny(){
+    const vast = window.ADMIN_VIDEO_AD;
+    if (!vast) return;
+    // In production: integrate IMA SDK or video.js VAST plugin. Here we simulate a 3s ad overlay.
+    const prevPaused = player.paused;
+    player.pause();
+    const old = videoAdSlot.innerHTML;
+    videoAdSlot.innerHTML = 'Playing ad...';
+    await new Promise(r=>setTimeout(r,3000));
+    videoAdSlot.innerHTML = old;
+    if (!prevPaused) player.play();
+  }
+
+  // attach to player play event
+  player.addEventListener('play', ()=> {
+    // when playback starts, if admin video ad present, play it once
+    showAdminVideoAdIfAny().catch(()=>{});
+  });
+
+  // ---------- Start ----------
+  loadFeed();
+  startAdsListener();
+
+  // handle ?v= query for open by id
+  (async ()=>{
+    const qp = new URLSearchParams(location.search);
+    const vid = qp.get('v') || qp.get('embed');
+    if (!vid) return;
+    try {
+      const vdoc = await getDoc(doc(db,'videos',vid));
+      if (vdoc.exists()) openPlayerForVideo(vid, vdoc.data());
+    } catch(e){ console.warn('open by id fail', e) }
+  })();
+
+  // expose for debug
+  window.loadFeed = loadFeed;
+  </script>
 </body>
 </html>
